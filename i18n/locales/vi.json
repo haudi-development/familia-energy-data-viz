@@ -1,0 +1,136 @@
+{
+  "app": {
+    "title": "Hệ Thống Quản Lý Năng Lượng Familia",
+    "subtitle": "Bảng Điều Khiển Phân Tích Dữ Liệu"
+  },
+  "nav": {
+    "dashboard": "Bảng Điều Khiển",
+    "analysis": "Phân Tích Dữ Liệu",
+    "reports": "Báo Cáo",
+    "settings": "Cài Đặt"
+  },
+  "dateRange": {
+    "label": "Khoảng Thời Gian",
+    "from": "Từ",
+    "to": "Đến",
+    "preset": "Thời Gian Mẫu",
+    "custom": "Tùy Chỉnh",
+    "3hours": "3 Giờ",
+    "1day": "1 Ngày",
+    "3days": "3 Ngày",
+    "1week": "1 Tuần",
+    "1month": "1 Tháng",
+    "apply": "Áp Dụng",
+    "cancel": "Hủy"
+  },
+  "devices": {
+    "title": "Chọn Thiết Bị",
+    "search": "Tìm kiếm thiết bị...",
+    "selectAll": "Chọn Tất Cả",
+    "deselectAll": "Bỏ Chọn Tất Cả",
+    "selected": "Đã Chọn",
+    "groups": {
+      "environmental": "Cảm Biến Môi Trường",
+      "power": "Đồng Hồ Điện",
+      "hvac": "Thiết Bị HVAC",
+      "lighting": "Chiếu Sáng",
+      "security": "An Ninh"
+    }
+  },
+  "metrics": {
+    "temperature": "Nhiệt Độ",
+    "humidity": "Độ Ẩm",
+    "co2": "Nồng Độ CO2",
+    "power": "Điện Năng Tiêu Thụ",
+    "occupancy": "Số Người Trong Phòng",
+    "illuminance": "Độ Chiếu Sáng",
+    "noise": "Mức Độ Tiếng Ồn",
+    "pressure": "Áp Suất",
+    "unit": {
+      "celsius": "°C",
+      "fahrenheit": "°F",
+      "percent": "%",
+      "ppm": "ppm",
+      "kwh": "kWh",
+      "people": "người",
+      "lux": "lx",
+      "db": "dB",
+      "hpa": "hPa"
+    }
+  },
+  "chart": {
+    "title": "Trực Quan Hóa Dữ Liệu",
+    "comparison": "Chế Độ So Sánh",
+    "export": "Xuất",
+    "settings": "Cài Đặt Biểu Đồ",
+    "zoom": "Phóng To",
+    "reset": "Đặt Lại",
+    "showLegend": "Hiển Thị Chú Giải",
+    "chartType": {
+      "line": "Đường",
+      "bar": "Cột",
+      "area": "Vùng"
+    },
+    "axis": {
+      "left": "Trục Trái",
+      "right": "Trục Phải",
+      "time": "Thời Gian"
+    }
+  },
+  "comparison": {
+    "title": "So Sánh Dữ Liệu",
+    "mode": {
+      "timeSeries": "Chuỗi Thời Gian",
+      "period": "So Sánh Kỳ",
+      "device": "So Sánh Thiết Bị"
+    },
+    "previousWeek": "Tuần Trước",
+    "previousMonth": "Tháng Trước",
+    "previousYear": "Năm Trước"
+  },
+  "realtime": {
+    "label": "Cập Nhật Thời Gian Thực",
+    "enabled": "Đã Bật",
+    "disabled": "Đã Tắt",
+    "interval": "Khoảng Cập Nhật",
+    "lastUpdate": "Cập Nhật Lần Cuối"
+  },
+  "facility": {
+    "office": "Tòa Nhà Văn Phòng",
+    "factory": "Nhà Máy",
+    "retail": "Cơ Sở Bán Lẻ",
+    "datacenter": "Trung Tâm Dữ Liệu",
+    "floor": "Tầng",
+    "area": "Khu Vực",
+    "zone": "Vùng"
+  },
+  "common": {
+    "loading": "Đang tải...",
+    "error": "Đã xảy ra lỗi",
+    "noData": "Không có dữ liệu",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Sửa",
+    "add": "Thêm",
+    "close": "Đóng",
+    "confirm": "Xác Nhận",
+    "search": "Tìm Kiếm",
+    "filter": "Lọc",
+    "export": "Xuất",
+    "import": "Nhập",
+    "download": "Tải Xuống",
+    "refresh": "Làm Mới"
+  },
+  "theme": {
+    "light": "Chế Độ Sáng",
+    "dark": "Chế Độ Tối",
+    "system": "Hệ Thống"
+  },
+  "language": {
+    "label": "Ngôn Ngữ",
+    "ja": "日本語",
+    "en": "English",
+    "vi": "Tiếng Việt"
+  }
+}

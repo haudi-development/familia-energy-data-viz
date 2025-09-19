@@ -1,0 +1,136 @@
+{
+  "app": {
+    "title": "Familia Energy Management System",
+    "subtitle": "Data Analysis Dashboard"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "analysis": "Data Analysis",
+    "reports": "Reports",
+    "settings": "Settings"
+  },
+  "dateRange": {
+    "label": "Date Range",
+    "from": "From",
+    "to": "To",
+    "preset": "Preset Period",
+    "custom": "Custom",
+    "3hours": "3 Hours",
+    "1day": "1 Day",
+    "3days": "3 Days",
+    "1week": "1 Week",
+    "1month": "1 Month",
+    "apply": "Apply",
+    "cancel": "Cancel"
+  },
+  "devices": {
+    "title": "Device Selection",
+    "search": "Search devices...",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "selected": "Selected",
+    "groups": {
+      "environmental": "Environmental Sensors",
+      "power": "Power Meters",
+      "hvac": "HVAC Equipment",
+      "lighting": "Lighting",
+      "security": "Security"
+    }
+  },
+  "metrics": {
+    "temperature": "Temperature",
+    "humidity": "Humidity",
+    "co2": "CO2 Level",
+    "power": "Power Consumption",
+    "occupancy": "Occupancy",
+    "illuminance": "Illuminance",
+    "noise": "Noise Level",
+    "pressure": "Pressure",
+    "unit": {
+      "celsius": "°C",
+      "fahrenheit": "°F",
+      "percent": "%",
+      "ppm": "ppm",
+      "kwh": "kWh",
+      "people": "people",
+      "lux": "lx",
+      "db": "dB",
+      "hpa": "hPa"
+    }
+  },
+  "chart": {
+    "title": "Data Visualization",
+    "comparison": "Comparison Mode",
+    "export": "Export",
+    "settings": "Chart Settings",
+    "zoom": "Zoom",
+    "reset": "Reset",
+    "showLegend": "Show Legend",
+    "chartType": {
+      "line": "Line",
+      "bar": "Bar",
+      "area": "Area"
+    },
+    "axis": {
+      "left": "Left Axis",
+      "right": "Right Axis",
+      "time": "Time"
+    }
+  },
+  "comparison": {
+    "title": "Data Comparison",
+    "mode": {
+      "timeSeries": "Time Series",
+      "period": "Period Comparison",
+      "device": "Device Comparison"
+    },
+    "previousWeek": "Previous Week",
+    "previousMonth": "Previous Month",
+    "previousYear": "Previous Year"
+  },
+  "realtime": {
+    "label": "Real-time Updates",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "interval": "Update Interval",
+    "lastUpdate": "Last Update"
+  },
+  "facility": {
+    "office": "Office Building",
+    "factory": "Factory",
+    "retail": "Retail Facility",
+    "datacenter": "Data Center",
+    "floor": "Floor",
+    "area": "Area",
+    "zone": "Zone"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "noData": "No data available",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "download": "Download",
+    "refresh": "Refresh"
+  },
+  "theme": {
+    "light": "Light Mode",
+    "dark": "Dark Mode",
+    "system": "System"
+  },
+  "language": {
+    "label": "Language",
+    "ja": "日本語",
+    "en": "English",
+    "vi": "Tiếng Việt"
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "app": {
+    "title": "Familia エネルギー管理システム",
+    "subtitle": "データ分析ダッシュボード"
+  },
+  "nav": {
+    "dashboard": "ダッシュボード",
+    "analysis": "データ分析",
+    "reports": "レポート",
+    "settings": "設定"
+  },
+  "dateRange": {
+    "label": "期間選択",
+    "from": "開始日",
+    "to": "終了日",
+    "preset": "プリセット期間",
+    "custom": "カスタム",
+    "3hours": "3時間",
+    "1day": "1日",
+    "3days": "3日",
+    "1week": "1週間",
+    "1month": "1ヶ月",
+    "apply": "適用",
+    "cancel": "キャンセル"
+  },
+  "devices": {
+    "title": "デバイス選択",
+    "search": "デバイスを検索...",
+    "selectAll": "すべて選択",
+    "deselectAll": "選択解除",
+    "selected": "選択済み",
+    "groups": {
+      "environmental": "環境センサー",
+      "power": "電力メーター",
+      "hvac": "空調設備",
+      "lighting": "照明",
+      "security": "セキュリティ"
+    }
+  },
+  "metrics": {
+    "temperature": "温度",
+    "humidity": "湿度",
+    "co2": "CO2濃度",
+    "power": "消費電力",
+    "occupancy": "在室人数",
+    "illuminance": "照度",
+    "noise": "騒音レベル",
+    "pressure": "気圧",
+    "unit": {
+      "celsius": "℃",
+      "fahrenheit": "°F",
+      "percent": "%",
+      "ppm": "ppm",
+      "kwh": "kWh",
+      "people": "人",
+      "lux": "lx",
+      "db": "dB",
+      "hpa": "hPa"
+    }
+  },
+  "chart": {
+    "title": "データ可視化",
+    "comparison": "比較モード",
+    "export": "エクスポート",
+    "settings": "グラフ設定",
+    "zoom": "ズーム",
+    "reset": "リセット",
+    "showLegend": "凡例を表示",
+    "chartType": {
+      "line": "折れ線",
+      "bar": "棒グラフ",
+      "area": "エリア"
+    },
+    "axis": {
+      "left": "左軸",
+      "right": "右軸",
+      "time": "時間"
+    }
+  },
+  "comparison": {
+    "title": "データ比較",
+    "mode": {
+      "timeSeries": "時系列比較",
+      "period": "期間比較",
+      "device": "デバイス比較"
+    },
+    "previousWeek": "前週比",
+    "previousMonth": "前月比",
+    "previousYear": "前年比"
+  },
+  "realtime": {
+    "label": "リアルタイム更新",
+    "enabled": "有効",
+    "disabled": "無効",
+    "interval": "更新間隔",
+    "lastUpdate": "最終更新"
+  },
+  "facility": {
+    "office": "オフィスビル",
+    "factory": "工場",
+    "retail": "商業施設",
+    "datacenter": "データセンター",
+    "floor": "フロア",
+    "area": "エリア",
+    "zone": "ゾーン"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "noData": "データがありません",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "add": "追加",
+    "close": "閉じる",
+    "confirm": "確認",
+    "search": "検索",
+    "filter": "フィルター",
+    "export": "エクスポート",
+    "import": "インポート",
+    "download": "ダウンロード",
+    "refresh": "更新"
+  },
+  "theme": {
+    "light": "ライトモード",
+    "dark": "ダークモード",
+    "system": "システム設定"
+  },
+  "language": {
+    "label": "言語",
+    "ja": "日本語",
+    "en": "English",
+    "vi": "Tiếng Việt"
+  }
+}
