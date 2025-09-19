@@ -96,28 +96,28 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
 
   // レスポンシブな軸幅を取得
   const getResponsiveAxisWidth = () => {
-    if (isMobile) return { inner: 25, outer: 28 };
-    if (isTablet) return { inner: 30, outer: 33 };
-    return { inner: 35, outer: 38 };
+    if (isMobile) return { inner: 25, outer: 35 };
+    if (isTablet) return { inner: 30, outer: 42 };
+    return { inner: 35, outer: 50 };
   };
 
   // レスポンシブなマージンを取得（4軸分のスペースを常に確保）
   const getResponsiveMargins = () => {
     if (isMobile) {
       return {
-        left: 50,  // 常に2軸分確保
-        right: 50  // 常に2軸分確保
+        left: 60,  // 常に2軸分確保 (25+35)
+        right: 60  // 常に2軸分確保 (25+35)
       };
     }
     if (isTablet) {
       return {
-        left: 60,  // 常に2軸分確保
-        right: 60  // 常に2軸分確保
+        left: 72,  // 常に2軸分確保 (30+42)
+        right: 72  // 常に2軸分確保 (30+42)
       };
     }
     return {
-      left: 70,  // 常に2軸分確保
-      right: 70  // 常に2軸分確保
+      left: 85,  // 常に2軸分確保 (35+50)
+      right: 85  // 常に2軸分確保 (35+50)
     };
   };
 
@@ -600,6 +600,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
       let orientation: 'left' | 'right';
       let width = axisWidths.inner;
       let labelOffset = 8;
+      let labelPosition: 'insideLeft' | 'insideRight' | 'outsideLeft' | 'outsideRight';
       let tickDx = 0;
 
       // 各位置に応じた設定
@@ -608,23 +609,27 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
           orientation = 'left';
           width = axisWidths.inner;
           labelOffset = 8;
+          labelPosition = 'insideLeft';
           break;
         case 'left2':  // 左2（外側）
           orientation = 'left';
           width = axisWidths.outer;
-          labelOffset = 25;
-          tickDx = -8;
+          labelOffset = 12;
+          labelPosition = 'outsideLeft';
+          tickDx = 0;
           break;
-        case 'right1': // 右1（内側）
+        case 'right1': // 右1（内側）- 右側の間隔を左側と合わせるため幅を調整
           orientation = 'right';
-          width = axisWidths.inner;
+          width = axisWidths.outer;  // 外側の幅を使用して間隔を統一
           labelOffset = 8;
+          labelPosition = 'insideRight';
           break;
         case 'right2': // 右2（外側）
           orientation = 'right';
           width = axisWidths.outer;
-          labelOffset = 25;
-          tickDx = 8;
+          labelOffset = 12;
+          labelPosition = 'outsideRight';
+          tickDx = 0;
           break;
       }
 
@@ -634,6 +639,10 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
         if (isTablet) return `${t(`metrics.${metric}`).slice(0, 4)} (${unit})`; // タブレットは短縮
         return `${t(`metrics.${metric}`)} (${unit})`; // デスクトップはフル表示
       };
+
+      // 外側の軸にはoffsetを追加（左右で異なる値を設定）
+      const isOuter = position.side === 'left2' || position.side === 'right2';
+      const axisOffset = position.side === 'left2' ? 15 : position.side === 'right2' ? 30 : 0;
 
       const axisProps: any = {
         yAxisId: metric,
@@ -650,10 +659,11 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
         ticks: Array.from({ length: commonTickCount }, (_, i) =>
           min + (max - min) * (i / (commonTickCount - 1))
         ),
+        ...(axisOffset > 0 && { offset: axisOffset }),
         label: {
           value: getAxisLabel(),
           angle: orientation === 'left' ? -90 : 90,
-          position: orientation === 'left' ? 'insideLeft' : 'insideRight',
+          position: labelPosition,
           offset: labelOffset,
           style: { fontSize: fontSizes.label, fill: color, textAnchor: 'middle' }
         },
@@ -677,12 +687,15 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
       const isOuter = side === 'left2' || side === 'right2';
       const isRight = side === 'right1' || side === 'right2';
 
+      // 右側の内側軸（right1）も外側の幅を使用
+      const width = (side === 'right1' || isOuter) ? axisWidths.outer : axisWidths.inner;
+
       return (
         <YAxis
           key={`placeholder-${position}`}
           yAxisId={`placeholder-${position}`}
           orientation={isRight ? 'right' : 'left'}
-          width={isOuter ? axisWidths.outer : axisWidths.inner}
+          width={width}
           stroke="transparent"
           tick={false}
           axisLine={false}
