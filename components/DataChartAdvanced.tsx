@@ -476,9 +476,10 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
     );
   }
 
-  // マルチAxis用のY軸を生成
+  // マルチAxis用のY軸を生成（常に4軸分のスペースを確保）
   const renderYAxes = () => {
-    if (!shouldUseMultiAxis) {
+    // 常に4軸モードでレンダリング（単一軸でも4軸分のスペースを確保）
+    if (false) {  // 単一軸モードは無効化
       // 単一メトリクスの場合、そのメトリクス情報を取得
       const firstSeries = visibleSeries[0];
       const firstMetric = firstSeries?.metric;
@@ -669,6 +670,27 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
       return yAxis;
     };
 
+    // 4軸を常にレンダリング（使わない軸は透明化）
+    const createPlaceholderAxis = (position: number) => {
+      const { side } = getAxisPosition(position);
+      const axisWidths = getResponsiveAxisWidth();
+      const isOuter = side === 'left2' || side === 'right2';
+      const isRight = side === 'right1' || side === 'right2';
+
+      return (
+        <YAxis
+          key={`placeholder-${position}`}
+          yAxisId={`placeholder-${position}`}
+          orientation={isRight ? 'right' : 'left'}
+          width={isOuter ? axisWidths.outer : axisWidths.inner}
+          stroke="transparent"
+          tick={false}
+          axisLine={false}
+          domain={[0, 100]}
+        />
+      );
+    };
+
     // 正しい順番でY軸を作成
     // Rechartsは後から追加した同じorientationのY軸を内側に配置する
     const axes: JSX.Element[] = [];
@@ -680,18 +702,29 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
     // 2番目のメトリクス（左2・外側）
     if (orderedMetrics[1]) {
       axes.push(createAxis(orderedMetrics[1], 1));
+    } else {
+      axes.push(createPlaceholderAxis(1));
     }
+
     // 1番目のメトリクス（左1・内側）
     if (orderedMetrics[0]) {
       axes.push(createAxis(orderedMetrics[0], 0));
+    } else {
+      axes.push(createPlaceholderAxis(0));
     }
+
     // 4番目のメトリクス（右2・外側）
     if (orderedMetrics[3]) {
       axes.push(createAxis(orderedMetrics[3], 3));
+    } else {
+      axes.push(createPlaceholderAxis(3));
     }
+
     // 3番目のメトリクス（右1・内側）
     if (orderedMetrics[2]) {
       axes.push(createAxis(orderedMetrics[2], 2));
+    } else {
+      axes.push(createPlaceholderAxis(2));
     }
 
     return axes;
@@ -1140,8 +1173,8 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
               data={chartData}
               margin={{
                 top: 5,
-                right: shouldUseMultiAxis ? getResponsiveMargins().right : 20,
-                left: shouldUseMultiAxis ? getResponsiveMargins().left : 50,
+                right: getResponsiveMargins().right,  // 常に4軸分のマージンを使用
+                left: getResponsiveMargins().left,  // 常に4軸分のマージンを使用
                 bottom: isMobile ? 30 : 40
               }}
               barCategoryGap={config.type === 'bar' ? '20%' : undefined}
