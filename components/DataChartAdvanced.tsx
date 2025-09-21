@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   LineChart, Line, BarChart, Bar, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  ResponsiveContainer, Brush
+  ResponsiveContainer, Brush, ReferenceLine
 } from 'recharts';
 import { format } from 'date-fns';
 import { TrendingUp, Download, Settings, RotateCcw, BarChart3, Activity, Layers, Edit2, Check, X, Sliders, Grid3x3 } from 'lucide-react';
@@ -57,7 +57,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
   onChartTitleChange,
   customColors: externalCustomColors = {},
   onCustomColorsChange,
-  chartHeight = 320,
+  chartHeight = 340,  // 20px増やして余白分を補償
   onChartHeightChange
 }) => {
   const { t } = useTranslation();
@@ -1185,7 +1185,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
             <ChartComponent
               data={chartData}
               margin={{
-                top: 5,
+                top: 25,  // 上部の余白を十分に確保
                 right: getResponsiveMargins().right,  // 常に4軸分のマージンを使用
                 left: getResponsiveMargins().left,  // 常に4軸分のマージンを使用
                 bottom: isMobile ? 30 : 40
@@ -1200,44 +1200,6 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                   </linearGradient>
                 ))}
               </defs>
-
-              {/* グリッド用の非表示Y軸 - グリッドの基準となる */}
-              {showGrid && (() => {
-                // グリッド用の基準となるメトリクスを取得
-                const referenceMetric = shouldUseMultiAxis
-                  ? (metricOrder[0] || visibleSeries[0]?.metric)
-                  : visibleSeries[0]?.metric;
-
-                if (!referenceMetric) return null;
-
-                const metricConfig = config.yAxisConfig?.[referenceMetric] || {};
-                const defaultRange = METRIC_RANGES[referenceMetric as MetricType];
-                const min = metricConfig.min !== undefined ? metricConfig.min : defaultRange[0];
-                const max = metricConfig.max !== undefined ? metricConfig.max : defaultRange[1];
-
-                const ticks = Array.from({ length: commonTickCount }, (_, i) =>
-                  min + (max - min) * (i / (commonTickCount - 1))
-                );
-
-                return (
-                  <YAxis
-                    yAxisId="grid-reference"
-                    domain={[min, max]}
-                    ticks={ticks}
-                    hide={true}
-                    width={0}
-                  />
-                );
-              })()}
-
-              {/* グリッド */}
-              {showGrid && (
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="#e5e7eb"
-                  vertical={config.type === 'line' || config.type === 'area'}
-                />
-              )}
 
               <XAxis
                 dataKey="time"
@@ -1274,6 +1236,43 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
 
               {/* Y軸 */}
               {renderYAxes()}
+
+              {/* グリッド線（ReferenceLineで実装） */}
+              {showGrid && (() => {
+                // 複数軸の場合は最初の軸、単一軸の場合はその軸を基準にする
+                const uniqueMetrics = Array.from(new Set(visibleSeries.map(s => s.metric)));
+                const orderedMetrics = metricOrder.filter(m => uniqueMetrics.includes(m));
+                uniqueMetrics.forEach(m => {
+                  if (!orderedMetrics.includes(m)) {
+                    orderedMetrics.push(m);
+                  }
+                });
+
+                const firstMetric = orderedMetrics[0];
+                if (!firstMetric) return null;
+
+                const metricConfig = config.yAxisConfig?.[firstMetric as MetricType] || {};
+                const defaultRange = METRIC_RANGES[firstMetric as MetricType];
+                const min = metricConfig.min !== undefined ? metricConfig.min : defaultRange[0];
+                const max = metricConfig.max !== undefined ? metricConfig.max : defaultRange[1];
+
+                // 目盛り位置を計算
+                const gridLines = Array.from({ length: commonTickCount }, (_, i) => {
+                  const value = min + (max - min) * (i / (commonTickCount - 1));
+                  return (
+                    <ReferenceLine
+                      key={`grid-${i}`}
+                      y={value}
+                      yAxisId={firstMetric}
+                      stroke="#e5e7eb"
+                      strokeDasharray="3 3"
+                      strokeWidth={1}
+                    />
+                  );
+                });
+
+                return gridLines;
+              })()}
 
               <Tooltip content={<CustomTooltip />} />
 
