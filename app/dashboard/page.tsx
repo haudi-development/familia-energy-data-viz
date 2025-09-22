@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import Sidebar from '@/components/Sidebar';
 import DateRangeSelector from '@/components/DateRangeSelector';
@@ -12,7 +12,7 @@ import {
   generateSensorData,
   generateAlerts
 } from '@/utils/mockDataGenerator';
-import { Device, DateRange, SensorData, Alert, MetricType, ChartPreset, GraphConfigItem } from '@/types';
+import { Device, DateRange, SensorData, Alert, MetricType, ChartPreset, GraphConfigItem, ChartConfig } from '@/types';
 import { subDays, format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Calendar, Monitor, BarChart3, ChevronDown, ChevronUp, X, Bookmark, Trash2, Plus, Edit2, RefreshCw } from 'lucide-react';
@@ -285,6 +285,7 @@ export default function DashboardPage() {
           showLegend: true,
           enableZoom: true,
           multiAxis: false,
+          showGrid: true,
           displayMode: 'standard'
         },
         customColors: (preset as unknown as { customColors?: Record<string, string> }).customColors || {},

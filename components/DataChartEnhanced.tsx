@@ -66,8 +66,8 @@ const DataChartEnhanced: React.FC<DataChartProps> = ({ data, config, onConfigCha
       });
     });
 
-    return Array.from(timeMap.values()).sort((a, b) => 
-      a.timestamp.getTime() - b.timestamp.getTime()
+    return Array.from(timeMap.values()).sort((a, b) =>
+      (a.timestamp as Date).getTime() - (b.timestamp as Date).getTime()
     );
   }, [data, config.displayMode]);
 
@@ -214,7 +214,9 @@ const DataChartEnhanced: React.FC<DataChartProps> = ({ data, config, onConfigCha
                     timeMap.set(timeKey, { time: timeKey, timestamp: point.timestamp });
                   }
                   const dataPoint = timeMap.get(timeKey);
-                  dataPoint[`${sensor.deviceId}`] = point.value;
+                  if (dataPoint) {
+                    dataPoint[`${sensor.deviceId}`] = point.value;
+                  }
                 });
               });
               return Array.from(timeMap.values()).sort((a, b) =>

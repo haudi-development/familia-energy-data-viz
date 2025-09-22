@@ -30,7 +30,7 @@ const DataChart: React.FC<DataChartProps> = ({
 }) => {
   const { t } = useTranslation();
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
-  const [zoomDomain, setZoomDomain] = useState<{ start?: number; end?: number }>({});
+  const [zoomDomain, setZoomDomain] = useState<{ startIndex?: number; endIndex?: number }>({});
   const [normalizeData, setNormalizeData] = useState(false);
   const [customColors, setCustomColors] = useState<Record<string, string>>(externalCustomColors);
   const [colorPickerOpen, setColorPickerOpen] = useState<string | null>(null);
@@ -128,20 +128,22 @@ const DataChart: React.FC<DataChartProps> = ({
         }
         
         const entry = dataByTimestamp.get(timestamp);
-        if (normalizeData) {
-          entry[seriesKey] = normalizeValue(point.value, sensorData.metric);
-          entry[`${seriesKey}_original`] = point.value;
-        } else {
-          entry[seriesKey] = point.value;
+        if (entry) {
+          if (normalizeData) {
+            entry[seriesKey] = normalizeValue(point.value, sensorData.metric);
+            entry[`${seriesKey}_original`] = point.value;
+          } else {
+            entry[seriesKey] = point.value;
+          }
+          entry[`${seriesKey}_unit`] = point.unit;
+          entry[`${seriesKey}_quality`] = point.quality;
+          entry[`${seriesKey}_metric`] = sensorData.metric;
         }
-        entry[`${seriesKey}_unit`] = point.unit;
-        entry[`${seriesKey}_quality`] = point.quality;
-        entry[`${seriesKey}_metric`] = sensorData.metric;
       });
     });
 
     return Array.from(dataByTimestamp.values())
-      .sort((a, b) => a.timestamp - b.timestamp);
+      .sort((a, b) => (a.timestamp as number) - (b.timestamp as number));
   }, [data, normalizeData]);
 
   const series = useMemo(() => {
@@ -193,8 +195,8 @@ const DataChart: React.FC<DataChartProps> = ({
   const handleExport = () => {
     const csvContent = [
       ['Timestamp', ...visibleSeries.map(s => s.name)].join(','),
-      ...chartData.map(row => 
-        [row.fullTime.toISOString(), ...visibleSeries.map(s => row[s.key] || '')].join(',')
+      ...chartData.map(row =>
+        [(row.fullTime as Date).toISOString(), ...visibleSeries.map(s => row[s.key] || '')].join(',')
       )
     ].join('\n');
 
@@ -242,8 +244,8 @@ const DataChart: React.FC<DataChartProps> = ({
                 <span className="text-gray-600 dark:text-gray-400">{entry.name}:</span>
               </div>
               <span className="font-medium text-gray-900 dark:text-gray-100 tabular-nums">
-                {normalizeData && entry.payload[`${entry.dataKey}_original`] 
-                  ? `${entry.payload[`${entry.dataKey}_original`].toFixed(2)} ${entry.payload[`${entry.dataKey}_unit`]} (${entry.value?.toFixed(0)}%)`
+                {normalizeData && entry.payload[`${entry.dataKey}_original`]
+                  ? `${(entry.payload[`${entry.dataKey}_original`] as number).toFixed(2)} ${entry.payload[`${entry.dataKey}_unit`]} (${entry.value?.toFixed(0)}%)`
                   : `${entry.value?.toFixed(2)} ${entry.payload[`${entry.dataKey}_unit`]}`}
               </span>
             </div>
@@ -496,11 +498,10 @@ const DataChart: React.FC<DataChartProps> = ({
                 vertical={false}
               />
               
-              <XAxis 
-                dataKey="time" 
+              <XAxis
+                dataKey="time"
                 stroke="#9ca3af"
                 tick={{ fontSize: 12 }}
-                domain={[zoomDomain.start || 'dataMin', zoomDomain.end || 'dataMax']}
               />
               
               {/* Y-Axes */}

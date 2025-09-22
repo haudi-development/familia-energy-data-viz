@@ -72,7 +72,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState(chartTitle);
   const [axisSettingsOpen, setAxisSettingsOpen] = useState<'left' | 'right' | 'x' | null>(null);
-  const [tempAxisConfig, setTempAxisConfig] = useState<AxisConfig>({});
+  const [tempAxisConfig, setTempAxisConfig] = useState<AxisConfig & { metric?: string }>({});
   const axisMinRef = useRef<HTMLInputElement>(null);
   const axisMaxRef = useRef<HTMLInputElement>(null);
   const axisTicksRef = useRef<HTMLInputElement>(null);
@@ -247,19 +247,21 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
         }
 
         const entry = dataByTimestamp.get(timestamp);
-        if (normalizeData) {
-          entry[seriesKey] = normalizeValue(point.value, sensorData.metric);
-          entry[`${seriesKey}_original`] = point.value;
-        } else {
-          entry[seriesKey] = point.value;
+        if (entry) {
+          if (normalizeData) {
+            entry[seriesKey] = normalizeValue(point.value, sensorData.metric);
+            entry[`${seriesKey}_original`] = point.value;
+          } else {
+            entry[seriesKey] = point.value;
+          }
+          entry[`${seriesKey}_unit`] = METRIC_UNITS[sensorData.metric];
+          entry[`${seriesKey}_metric`] = sensorData.metric;
         }
-        entry[`${seriesKey}_unit`] = METRIC_UNITS[sensorData.metric];
-        entry[`${seriesKey}_metric`] = sensorData.metric;
       });
     });
 
     const sortedData = Array.from(dataByTimestamp.values())
-      .sort((a, b) => a.timestamp - b.timestamp);
+      .sort((a, b) => (a.timestamp as number) - (b.timestamp as number));
 
     // インデックスを追加（X軸の位置管理用）
     sortedData.forEach((item, index) => {
@@ -295,7 +297,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
         newOrder.push(metric);
       }
     });
-    const filteredOrder = newOrder.filter(m => currentMetrics.includes(m));
+    const filteredOrder = newOrder.filter(m => currentMetrics.includes(m as MetricType));
     if (JSON.stringify(filteredOrder) !== JSON.stringify(metricOrder)) {
       setTimeout(() => setMetricOrder(filteredOrder), 0);
     }
@@ -350,7 +352,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
     const csvContent = [
       ['Timestamp', ...visibleSeries.map(s => `${s.name} (${s.unit})`)].join(','),
       ...chartData.map(row =>
-        [row.fullTime.toISOString(), ...visibleSeries.map(s => row[s.key] || '')].join(',')
+        [(row.fullTime as Date).toISOString(), ...visibleSeries.map(s => row[s.key] || '')].join(',')
       )
     ].join('\n');
 
@@ -390,7 +392,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
 
       // 現在表示されているグラフエリアをキャプチャ
       const canvas = await html2canvas(chartContainerRef.current, {
-        backgroundColor: '#ffffff',
+        backgroundColor: '#ffffff' as any,
         scale: 2,
         logging: false,
         useCORS: true,
