@@ -29,7 +29,7 @@ export default function DashboardPage() {
     start: new Date(),
     end: new Date()
   });
-  const [alerts] = useState<Alert[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [graphs, setGraphs] = useState<GraphConfigItem[]>([]);
   const [realtimeEnabled, setRealtimeEnabled] = useState(false);
   const [realtimeInterval, setRealtimeInterval] = useState(5);
