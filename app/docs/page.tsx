@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Zap,
   TrendingUp,
@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 export default function DocsHome() {
-  const [language, setLanguage] = useState<'ja' | 'vi'>('ja');
+  const { language } = useLanguage();
 
   const content = {
     ja: {
@@ -72,6 +72,7 @@ export default function DocsHome() {
         title: 'クイックリンク',
         items: [
           { title: 'クイックスタート', href: '/docs/quickstart', description: '5分で始める' },
+          { title: '機能一覧', href: '/docs/features', description: 'グラフ機能の詳細仕様' },
           { title: 'APIリファレンス', href: '/docs/api/types', description: '詳細なAPI仕様' },
           { title: '統合ガイド', href: '/docs/integration/familia', description: 'Familiaとの統合方法' },
           { title: '注意事項', href: '/docs/cautions', description: '重要な注意点' },
@@ -133,6 +134,7 @@ export default function DocsHome() {
         title: 'Liên kết nhanh',
         items: [
           { title: 'Bắt đầu nhanh', href: '/docs/quickstart', description: 'Bắt đầu trong 5 phút' },
+          { title: 'Danh sách tính năng', href: '/docs/features', description: 'Chi tiết tính năng biểu đồ' },
           { title: 'Tham khảo API', href: '/docs/api/types', description: 'Thông số API chi tiết' },
           { title: 'Hướng dẫn tích hợp', href: '/docs/integration/familia', description: 'Cách tích hợp với Familia' },
           { title: 'Lưu ý', href: '/docs/cautions', description: 'Những điểm quan trọng cần lưu ý' },
@@ -146,18 +148,6 @@ export default function DocsHome() {
   return (
     <div className="prose prose-gray dark:prose-invert max-w-none">
       {/* Language Selector for mobile */}
-      <div className="lg:hidden mb-6 flex items-center space-x-2">
-        <Globe className="w-5 h-5 text-gray-500" />
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value as 'ja' | 'vi')}
-          className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg
-            bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-primary-500"
-        >
-          <option value="ja">日本語</option>
-          <option value="vi">Tiếng Việt</option>
-        </select>
-      </div>
 
       {/* Hero Section */}
       <div className="not-prose mb-8">

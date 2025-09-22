@@ -3,29 +3,28 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { LanguageProvider, useLanguage } from '@/contexts/LanguageContext';
 import {
   Book,
   Code2,
   Package,
   Puzzle,
   AlertCircle,
-  ChevronRight,
   Menu,
   X,
   Globe,
   FileJson,
-  Wrench,
-  GitBranch,
-  Layers
+  Layers,
+  Sparkles
 } from 'lucide-react';
 
-export default function DocsLayout({
+function DocsLayoutContent({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [language, setLanguage] = useState<'ja' | 'vi'>('ja');
+  const { language, setLanguage } = useLanguage();
   const pathname = usePathname();
 
   const navigation = {
@@ -39,6 +38,11 @@ export default function DocsLayout({
         name: 'クイックスタート',
         href: '/docs/quickstart',
         icon: Code2,
+      },
+      {
+        name: '機能一覧',
+        href: '/docs/features',
+        icon: Sparkles,
       },
       {
         name: 'APIリファレンス',
@@ -94,6 +98,11 @@ export default function DocsLayout({
         name: 'Bắt đầu nhanh',
         href: '/docs/quickstart',
         icon: Code2,
+      },
+      {
+        name: 'Danh sách tính năng',
+        href: '/docs/features',
+        icon: Sparkles,
       },
       {
         name: 'Tham khảo API',
@@ -243,5 +252,17 @@ export default function DocsLayout({
         />
       )}
     </div>
+  );
+}
+
+export default function DocsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <LanguageProvider>
+      <DocsLayoutContent>{children}</DocsLayoutContent>
+    </LanguageProvider>
   );
 }

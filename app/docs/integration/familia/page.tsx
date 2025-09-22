@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Globe, CheckCircle, AlertTriangle, Copy, Check } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { CheckCircle, AlertTriangle, Copy, Check } from 'lucide-react';
 
 export default function FamiliaIntegrationDoc() {
-  const [language, setLanguage] = useState<'ja' | 'vi'>('ja');
+  const { language } = useLanguage();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const copyToClipboard = (code: string, id: string) => {
@@ -322,19 +323,6 @@ export function useRealtimeEnergy(deviceIds: string[]) {
 
   return (
     <div className="max-w-5xl">
-      {/* Language Selector */}
-      <div className="mb-6 flex items-center space-x-2">
-        <Globe className="w-5 h-5 text-gray-500" />
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value as 'ja' | 'vi')}
-          className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg
-            bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-primary-500"
-        >
-          <option value="ja">日本語</option>
-          <option value="vi">Tiếng Việt</option>
-        </select>
-      </div>
 
       {/* Header */}
       <div className="mb-8">

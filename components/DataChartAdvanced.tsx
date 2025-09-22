@@ -162,10 +162,22 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
   ];
 
   const presetColors = [
-    '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444',
-    '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#14b8a6',
-    '#6366f1', '#a855f7', '#f43f5e', '#0ea5e9', '#eab308',
-    '#78716c', '#64748b', '#fbbf24', '#34d399', '#c084fc',
+    // 赤系（5色）
+    '#fee2e2', '#fca5a5', '#f87171', '#ef4444', '#dc2626',
+    // オレンジ系（5色）
+    '#fed7aa', '#fdba74', '#fb923c', '#f97316', '#ea580c',
+    // 黄色系（5色）
+    '#fef3c7', '#fde68a', '#fcd34d', '#fbbf24', '#f59e0b',
+    // 緑系（5色）
+    '#d1fae5', '#86efac', '#4ade80', '#22c55e', '#16a34a',
+    // 青緑系（5色）
+    '#cffafe', '#67e8f9', '#22d3ee', '#06b6d4', '#0891b2',
+    // 青系（5色）
+    '#dbeafe', '#93c5fd', '#60a5fa', '#3b82f6', '#2563eb',
+    // 紫系（5色）
+    '#e9d5ff', '#c084fc', '#a855f7', '#9333ea', '#7c3aed',
+    // ピンク系（5色）
+    '#fce7f3', '#fbcfe8', '#f9a8d4', '#f472b6', '#ec4899',
   ];
 
   const changeSeriesColor = (seriesKey: string, color: string) => {
@@ -1324,12 +1336,19 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                 {colorPickerOpen === s.key && (
                   <div className="absolute top-full left-0 mt-1 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50" style={{ minWidth: '260px' }}>
                     <div className="grid grid-cols-5 gap-1 mb-2">
-                      {presetColors.map(color => (
+                      {presetColors.map((color, idx) => (
                         <button
                           key={color}
                           onClick={() => changeSeriesColor(s.key, color)}
-                          className="w-8 h-8 rounded border border-gray-200 dark:border-gray-600 hover:scale-110 transition-transform"
+                          className="w-7 h-7 rounded border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform"
                           style={{ backgroundColor: color }}
+                          title={`${Math.floor(idx / 5) === 0 ? '赤' :
+                                  Math.floor(idx / 5) === 1 ? 'オレンジ' :
+                                  Math.floor(idx / 5) === 2 ? '黄色' :
+                                  Math.floor(idx / 5) === 3 ? '緑' :
+                                  Math.floor(idx / 5) === 4 ? '青緑' :
+                                  Math.floor(idx / 5) === 5 ? '青' :
+                                  Math.floor(idx / 5) === 6 ? '紫' : 'ピンク'}系 ${(idx % 5) + 1}`}
                         />
                       ))}
                     </div>
