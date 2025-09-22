@@ -27,7 +27,6 @@ const DataChartEnhanced: React.FC<DataChartProps> = ({ data, config, onConfigCha
     power: { unit: 'kW', color: '#f59e0b', domain: [0, 100] },
     occupancy: { unit: '人', color: '#8b5cf6', domain: [0, 50] },
     illuminance: { unit: 'lx', color: '#f97316', domain: [0, 1000] },
-    light: { unit: 'lx', color: '#f97316', domain: [0, 1000] },
     noise: { unit: 'dB', color: '#06b6d4', domain: [0, 100] },
     pressure: { unit: 'hPa', color: '#ec4899', domain: [900, 1100] },
     hvacStatus: { unit: '', color: '#64748b', domain: [0, 1] },
@@ -54,14 +53,16 @@ const DataChartEnhanced: React.FC<DataChartProps> = ({ data, config, onConfigCha
         }
         
         const dataPoint = timeMap.get(timeKey);
-        const key = `${sensor.deviceId}_${sensor.metric}`;
-        
-        if (config.displayMode === 'normalized') {
-          dataPoint[key] = normalizeValue(point.value, sensor.metric);
-          dataPoint[`${key}_original`] = point.value;
-          dataPoint[`${key}_unit`] = metricUnits[sensor.metric].unit;
-        } else {
-          dataPoint[key] = point.value;
+        if (dataPoint) {
+          const key = `${sensor.deviceId}_${sensor.metric}`;
+
+          if (config.displayMode === 'normalized') {
+            dataPoint[key] = normalizeValue(point.value, sensor.metric);
+            dataPoint[`${key}_original`] = point.value;
+            dataPoint[`${key}_unit`] = metricUnits[sensor.metric].unit;
+          } else {
+            dataPoint[key] = point.value;
+          }
         }
       });
     });
@@ -123,7 +124,7 @@ const DataChartEnhanced: React.FC<DataChartProps> = ({ data, config, onConfigCha
               <div key={index} className="flex items-center justify-between space-x-4 text-sm">
                 <span style={{ color: entry.color }}>{entry.name}:</span>
                 <span className="font-medium text-gray-900 dark:text-gray-100">
-                  {originalValue?.toFixed(1)} {unit}
+                  {typeof originalValue === 'number' ? originalValue.toFixed(1) : String(originalValue || '')} {String(unit || '')}
                   {config.displayMode === 'normalized' && ` (${entry.value?.toFixed(0)}%)`}
                 </span>
               </div>

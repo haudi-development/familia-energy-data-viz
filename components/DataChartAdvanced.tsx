@@ -65,7 +65,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(
     new Set(config.hiddenSeries || [])
   );
-  const [zoomDomain, setZoomDomain] = useState<{ start?: number; end?: number }>({});
+  const [zoomDomain, setZoomDomain] = useState<{ startIndex?: number; endIndex?: number }>({});
   const [normalizeData, setNormalizeData] = useState(config.normalizeData || false);
   const [customColors, setCustomColors] = useState<Record<string, string>>(externalCustomColors);
   const [colorPickerOpen, setColorPickerOpen] = useState<string | null>(null);
@@ -392,12 +392,11 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
 
       // 現在表示されているグラフエリアをキャプチャ
       const canvas = await html2canvas(chartContainerRef.current, {
-        backgroundColor: '#ffffff' as any,
         scale: 2,
         logging: false,
         useCORS: true,
         allowTaint: true
-      });
+      } as Parameters<typeof html2canvas>[1]);
 
       // 非表示にした凡例を復元
       hiddenItems.forEach(({ element, originalDisplay }) => {
@@ -454,7 +453,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
               </div>
               <span className="font-medium text-gray-900 dark:text-gray-100 tabular-nums">
                 {normalizeData && entry.payload[`${entry.dataKey}_original`]
-                  ? `${Math.round(entry.payload[`${entry.dataKey}_original`])} ${entry.payload[`${entry.dataKey}_unit`]} (${Math.round(entry.value)}%)`
+                  ? `${Math.round(entry.payload[`${entry.dataKey}_original`] as number)} ${entry.payload[`${entry.dataKey}_unit`]} (${Math.round(entry.value)}%)`
                   : `${Math.round(entry.value)} ${entry.payload[`${entry.dataKey}_unit`]}`}
               </span>
             </div>
@@ -583,9 +582,9 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
       } else if (firstMetric) {
         const defaultRange = METRIC_RANGES[firstMetric];
         domain = [
-          metricConfig.min !== undefined ? metricConfig.min : defaultRange[0],
-          metricConfig.max !== undefined ? metricConfig.max : defaultRange[1]
-        ];
+          metricConfig.min ?? defaultRange[0],
+          metricConfig.max ?? defaultRange[1]
+        ] as [number, number];
       } else {
         domain = [0, 100];
       }
@@ -632,7 +631,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
 
     // メトリクスの追加順序を保持して配置を決定
     const uniqueMetrics = Array.from(new Set(visibleSeries.map(s => s.metric)));
-    const orderedMetrics = metricOrder.filter(m => uniqueMetrics.includes(m));
+    const orderedMetrics = metricOrder.filter(m => uniqueMetrics.includes(m as MetricType));
 
     // 順序が決まっていないメトリクスを追加
     uniqueMetrics.forEach(m => {
@@ -738,7 +737,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
         tickFormatter: (value: number) => Math.round(value).toString(),
         width: width,
         domain: [min, max],
-        scale: "linear",
+        scale: "linear" as const,
         allowDataOverflow: true,
         allowDecimals: false,
         tickMargin: 3,
@@ -792,7 +791,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
 
     // 正しい順番でY軸を作成
     // Rechartsは後から追加した同じorientationのY軸を内側に配置する
-    const axes: JSX.Element[] = [];
+    const axes: React.ReactElement[] = [];
 
     // 実験結果に基づいた順序：
     // 左側: 2番目を先に（外側）、1番目を後に（内側）
@@ -1442,7 +1441,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
               {showGrid && (() => {
                 // 複数軸の場合は最初の軸、単一軸の場合はその軸を基準にする
                 const uniqueMetrics = Array.from(new Set(visibleSeries.map(s => s.metric)));
-                const orderedMetrics = metricOrder.filter(m => uniqueMetrics.includes(m));
+                const orderedMetrics = metricOrder.filter(m => uniqueMetrics.includes(m as MetricType));
                 uniqueMetrics.forEach(m => {
                   if (!orderedMetrics.includes(m)) {
                     orderedMetrics.push(m);

@@ -22,7 +22,7 @@ const MetricSelector: React.FC<MetricSelectorProps> = ({
     { id: 'co2', label: t('metrics.co2'), icon: <Wind className="w-4 h-4" />, color: 'text-green-500' },
     { id: 'power', label: t('metrics.power'), icon: <Zap className="w-4 h-4" />, color: 'text-yellow-500' },
     { id: 'occupancy', label: t('metrics.occupancy'), icon: <Users className="w-4 h-4" />, color: 'text-purple-500' },
-    { id: 'light', label: t('metrics.light'), icon: <Sun className="w-4 h-4" />, color: 'text-orange-500' },
+    { id: 'illuminance', label: t('metrics.illuminance'), icon: <Sun className="w-4 h-4" />, color: 'text-orange-500' },
   ];
 
   const toggleMetric = (metric: MetricType) => {
@@ -85,8 +85,8 @@ const MetricSelector: React.FC<MetricSelectorProps> = ({
                     : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
                   }`}
               >
-                <div className={`${metric.color}`}>
-                  {React.cloneElement(metric.icon as React.ReactElement, { className: 'w-3 h-3' })}
+                <div className={`${metric.color} [&>svg]:w-3 [&>svg]:h-3`}>
+                  {metric.icon}
                 </div>
                 <span className={`text-xs font-medium ${
                   isSelected 
