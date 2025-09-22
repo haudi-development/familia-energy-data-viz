@@ -1,13 +1,14 @@
 import React, { useState, useMemo, useRef, useCallback, memo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  LineChart, Line, BarChart, Bar, AreaChart, Area,
+  ComposedChart, Line, Bar, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, Brush, ReferenceLine
 } from 'recharts';
 import { format } from 'date-fns';
-import { TrendingUp, Download, Settings, RotateCcw, BarChart3, Activity, Layers, Edit2, Check, X, Sliders, Grid3x3 } from 'lucide-react';
+import { TrendingUp, Download, Settings, RotateCcw, BarChart3, Activity, Layers, Edit2, Check, X, Sliders, Grid3x3, Camera } from 'lucide-react';
 import { SensorData, ChartConfig, MetricType, AxisConfig } from '../types';
+import html2canvas from 'html2canvas';
 
 interface DataChartAdvancedProps {
   data: SensorData[];
@@ -61,9 +62,11 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
   onChartHeightChange
 }) => {
   const { t } = useTranslation();
-  const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
+  const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(
+    new Set(config.hiddenSeries || [])
+  );
   const [zoomDomain, setZoomDomain] = useState<{ start?: number; end?: number }>({});
-  const [normalizeData, setNormalizeData] = useState(false);
+  const [normalizeData, setNormalizeData] = useState(config.normalizeData || false);
   const [customColors, setCustomColors] = useState<Record<string, string>>(externalCustomColors);
   const [colorPickerOpen, setColorPickerOpen] = useState<string | null>(null);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -76,12 +79,15 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
   const [tempHeight, setTempHeight] = useState(chartHeight);
   const [showHeightSetting, setShowHeightSetting] = useState(false);
   const [showGrid, setShowGrid] = useState(config.showGrid ?? true);
-  const [commonTickCount, setCommonTickCount] = useState(5); // 共通の目盛り数
+  const [commonTickCount, setCommonTickCount] = useState(config.commonTickCount || 5); // 共通の目盛り数
   const [showAxisConfig, setShowAxisConfig] = useState(false); // 軸設定パネル
   const [activeConfigTab, setActiveConfigTab] = useState<string>('common'); // アクティブなタブ
   const [metricOrder, setMetricOrder] = useState<string[]>([]);
-  const [seriesOpacity, setSeriesOpacity] = useState<Record<string, number>>({});
+  const [seriesOpacity, setSeriesOpacity] = useState<Record<string, number>>(
+    config.seriesOpacity || {}
+  );
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
 
   // レスポンシブ対応
   useEffect(() => {
@@ -169,7 +175,12 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
   };
 
   const changeSeriesOpacity = (seriesKey: string, opacity: number) => {
-    setSeriesOpacity({ ...seriesOpacity, [seriesKey]: opacity });
+    const newSeriesOpacity = { ...seriesOpacity, [seriesKey]: opacity };
+    setSeriesOpacity(newSeriesOpacity);
+    onConfigChange({
+      ...config,
+      seriesOpacity: newSeriesOpacity
+    });
   };
 
   const handleTitleSave = () => {
@@ -326,6 +337,13 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
       newHidden.add(seriesKey);
     }
     setHiddenSeries(newHidden);
+
+    // configを更新
+    const updatedConfig = {
+      ...config,
+      hiddenSeries: Array.from(newHidden)
+    };
+    onConfigChange(updatedConfig);
   };
 
   const handleExport = () => {
@@ -347,11 +365,67 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  const ChartComponent = config.type === 'bar' ? BarChart :
-                         config.type === 'area' ? AreaChart : LineChart;
+  // 画像キャプチャ機能
+  const handleCapture = async () => {
+    if (!chartContainerRef.current) return;
 
-  const DataComponent = config.type === 'bar' ? Bar :
-                        config.type === 'area' ? Area : Line;
+    try {
+      // 非表示の凡例を一時的に完全に非表示にする
+      const legendItems = chartContainerRef.current.querySelectorAll('.recharts-legend-item');
+      const hiddenItems: { element: HTMLElement, originalDisplay: string }[] = [];
+
+      legendItems.forEach(item => {
+        const element = item as HTMLElement;
+        if (element.style.opacity === '0.3') {
+          hiddenItems.push({
+            element,
+            originalDisplay: element.style.display
+          });
+          element.style.display = 'none';
+        }
+      });
+
+      // 少し待ってレンダリングを安定させる
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // 現在表示されているグラフエリアをキャプチャ
+      const canvas = await html2canvas(chartContainerRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        allowTaint: true
+      });
+
+      // 非表示にした凡例を復元
+      hiddenItems.forEach(({ element, originalDisplay }) => {
+        element.style.display = originalDisplay;
+      });
+
+      // 画像をダウンロード形式で提供
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `chart-${chartTitle || 'export'}-${format(new Date(), 'yyyyMMdd-HHmmss')}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+      }, 'image/png');
+
+    } catch (error) {
+      console.error('Failed to capture chart:', error);
+      alert('画像のキャプチャに失敗しました。');
+    }
+  };
+
+  // メトリクスごとのグラフタイプを取得
+  const getMetricType = (metric: string): 'line' | 'bar' | 'area' => {
+    return config.metricTypes?.[metric] || config.type || 'line';
+  };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload) return null;
@@ -443,7 +517,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
             </button>
             <button
               onClick={() => handleAxisSettingSave(side)}
-              className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              className="px-3 py-1 text-sm bg-[#50A69F] text-white rounded hover:bg-[#3A7A74] transition-colors"
             >
               適用
             </button>
@@ -772,7 +846,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                 onClick={() => setActiveConfigTab('common')}
                 className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
                   activeConfigTab === 'common'
-                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                    ? 'bg-[#50A69F]/10 dark:bg-[#50A69F]/20 text-[#50A69F] dark:text-[#6BBDB6] border-b-2 border-[#50A69F] dark:border-[#6BBDB6]'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
@@ -784,7 +858,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                   onClick={() => setActiveConfigTab(metric)}
                   className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
                     activeConfigTab === metric
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                      ? 'bg-[#50A69F]/10 dark:bg-[#50A69F]/20 text-[#50A69F] dark:text-[#6BBDB6] border-b-2 border-[#50A69F] dark:border-[#6BBDB6]'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
@@ -807,14 +881,54 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                       onChange={(e) => {
                         const value = Math.max(2, Math.min(10, Number(e.target.value)));
                         setCommonTickCount(value);
+                        onConfigChange({
+                          ...config,
+                          commonTickCount: value
+                        });
                       }}
                       min="2"
                       max="10"
-                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#50A69F]"
                     />
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                       すべてのY軸に適用される目盛り数を設定します（2〜10）
                     </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      全メトリクス一括グラフタイプ設定
+                    </label>
+                    <div className="flex space-x-2 mb-2">
+                      {(['line', 'bar', 'area'] as const).map(type => (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            // すべてのメトリクスに一括適用
+                            const newMetricTypes: { [key: string]: 'line' | 'bar' | 'area' } = {};
+                            Array.from(new Set(data.map(d => d.metric))).forEach(metric => {
+                              newMetricTypes[metric] = type;
+                            });
+                            const newConfig = { ...config, type, metricTypes: newMetricTypes };
+                            onConfigChange(newConfig);
+                          }}
+                          className="flex-1 px-3 py-2 text-sm bg-[#50A69F]/20 dark:bg-[#50A69F]/30 text-[#3A7A74] dark:text-[#6BBDB6] rounded hover:bg-[#50A69F]/30 dark:hover:bg-[#50A69F]/40 transition-colors"
+                        >
+                          すべて{type === 'line' ? '線' : type === 'bar' ? '棒' : '面'}に
+                        </button>
+                      ))}
+                    </div>
+                    {config.metricTypes && Object.keys(config.metricTypes).length > 0 && (
+                      <button
+                        onClick={() => {
+                          const newConfig = { ...config, metricTypes: {} };
+                          onConfigChange(newConfig);
+                        }}
+                        className="w-full px-3 py-2 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        すべての個別設定をクリア
+                      </button>
+                    )}
                   </div>
 
                   <div>
@@ -829,7 +943,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                         newConfig.xAxisConfig.ticks = e.target.value === 'auto' ? undefined : Number(e.target.value);
                         onConfigChange(newConfig);
                       }}
-                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#50A69F]"
                     >
                       <option value="auto">自動</option>
                       <option value="4">約5個表示</option>
@@ -862,7 +976,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                         newConfig.yAxisConfig[activeConfigTab].min = Number(e.target.value);
                         onConfigChange(newConfig);
                       }}
-                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#50A69F]"
                     />
                   </div>
 
@@ -880,8 +994,34 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                         newConfig.yAxisConfig[activeConfigTab].max = Number(e.target.value);
                         onConfigChange(newConfig);
                       }}
-                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#50A69F]"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      グラフタイプ
+                    </label>
+                    <div className="flex space-x-2">
+                      {(['line', 'bar', 'area'] as const).map(type => (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            const newConfig = { ...config };
+                            if (!newConfig.metricTypes) newConfig.metricTypes = {};
+                            newConfig.metricTypes[activeConfigTab] = type;
+                            onConfigChange(newConfig);
+                          }}
+                          className={`flex-1 px-3 py-2 text-sm rounded-md transition-colors ${
+                            getMetricType(activeConfigTab) === type
+                              ? 'bg-[#50A69F] text-white'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                          }`}
+                        >
+                          {type === 'line' ? '線' : type === 'bar' ? '棒' : '面'}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -904,7 +1044,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                   // 設定を適用
                   setShowAxisConfig(false);
                 }}
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 text-sm bg-[#50A69F] text-white rounded-md hover:bg-[#3A7A74] transition-colors"
               >
                 適用
               </button>
@@ -913,7 +1053,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
         </>
       )}
 
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden relative">
+    <div ref={chartContainerRef} data-capture="true" className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden relative">
 
       {/* ヘッダー */}
       <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-3">
@@ -926,7 +1066,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                     type="text"
                     value={tempTitle}
                     onChange={(e) => setTempTitle(e.target.value)}
-                    className="px-2 py-1 text-sm font-medium bg-white dark:bg-gray-700 border border-primary-500 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
+                    className="px-2 py-1 text-sm font-medium bg-white dark:bg-gray-700 border border-[#50A69F] rounded focus:outline-none focus:ring-1 focus:ring-[#50A69F]"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleTitleSave();
@@ -959,28 +1099,65 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
 
           <div className="flex items-center space-x-2">
             {/* グラフタイプ選択 */}
-            <div className="flex bg-gray-100 dark:bg-gray-700 rounded p-0.5">
-              {(['line', 'bar', 'area'] as const).map(type => (
-                <button
-                  key={type}
-                  onClick={() => onConfigChange({ ...config, type })}
-                  className={`p-1.5 rounded transition-all ${
-                    config.type === type
-                      ? 'bg-white dark:bg-gray-600 shadow-sm text-primary-600 dark:text-primary-400'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                  }`}
-                >
-                  {chartTypeIcons[type]}
-                </button>
-              ))}
+            <div className="relative group">
+              <div className="flex bg-gray-100 dark:bg-gray-700 rounded p-0.5">
+                {(['line', 'bar', 'area'] as const).map(type => (
+                  <button
+                    key={type}
+                    onClick={(e) => {
+                      if (e.shiftKey) {
+                        // Shift+クリックで強制適用（すべての個別設定を上書き）
+                        const newConfig = { ...config, type, metricTypes: {} };
+                        onConfigChange(newConfig);
+                      } else {
+                        // 通常クリックは個別設定を保持
+                        onConfigChange({ ...config, type });
+                      }
+                    }}
+                    className={`p-1.5 rounded transition-all ${
+                      config.type === type
+                        ? 'bg-white dark:bg-gray-600 shadow-sm text-[#50A69F] dark:text-[#6BBDB6]'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                    title={`${type === 'line' ? '線' : type === 'bar' ? '棒' : '面'}グラフ (Shift+クリックで全メトリクス強制適用)`}
+                  >
+                    {chartTypeIcons[type]}
+                  </button>
+                ))}
+              </div>
+              {/* 個別設定がある場合のインジケーター */}
+              {config.metricTypes && Object.keys(config.metricTypes).length > 0 && (
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full" title="個別設定あり" />
+              )}
             </div>
+
+            {/* 個別設定リセットボタン */}
+            {config.metricTypes && Object.keys(config.metricTypes).length > 0 && (
+              <button
+                onClick={() => {
+                  const newConfig = { ...config, metricTypes: {} };
+                  onConfigChange(newConfig);
+                }}
+                className="px-2 py-1 text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
+                title="すべての個別設定をリセット"
+              >
+                個別設定をリセット
+              </button>
+            )}
 
             {/* 正規化トグル */}
             <button
-              onClick={() => setNormalizeData(!normalizeData)}
+              onClick={() => {
+                const newNormalizeData = !normalizeData;
+                setNormalizeData(newNormalizeData);
+                onConfigChange({
+                  ...config,
+                  normalizeData: newNormalizeData
+                });
+              }}
               className={`px-2 py-1 rounded text-xs font-medium transition-all ${
                 normalizeData
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                  ? 'bg-[#50A69F]/20 dark:bg-[#50A69F]/30 text-[#3A7A74] dark:text-[#6BBDB6]'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
@@ -1004,12 +1181,24 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                 <Download className="w-3.5 h-3.5" />
               </button>
               <button
+                onClick={handleCapture}
+                className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded hover:bg-white/50 dark:hover:bg-gray-600"
+                title="画像保存"
+              >
+                <Camera className="w-3.5 h-3.5" />
+              </button>
+              <button
                 onClick={() => {
-                  setShowGrid(!showGrid);
+                  const newShowGrid = !showGrid;
+                  setShowGrid(newShowGrid);
+                  onConfigChange({
+                    ...config,
+                    showGrid: newShowGrid
+                  });
                 }}
                 className={`p-1.5 rounded ${
                   showGrid
-                    ? 'text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/50'
+                    ? 'text-[#50A69F] dark:text-[#6BBDB6] bg-[#50A69F]/20 dark:bg-[#50A69F]/30'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white/50 dark:hover:bg-gray-600'
                 }`}
                 title="グリッド"
@@ -1020,7 +1209,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                 onClick={() => setShowAxisConfig(!showAxisConfig)}
                 className={`p-1.5 rounded ${
                   showAxisConfig
-                    ? 'text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/50'
+                    ? 'text-[#50A69F] dark:text-[#6BBDB6] bg-[#50A69F]/20 dark:bg-[#50A69F]/30'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white/50 dark:hover:bg-gray-600'
                 }`}
                 title="軸設定"
@@ -1054,7 +1243,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                         min="200"
                         max="800"
                         step="10"
-                        className="w-24 px-2 py-1 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-24 px-2 py-1 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#50A69F]"
                       />
                       <span className="text-xs text-gray-500">px</span>
                       <button
@@ -1062,7 +1251,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                           onChartHeightChange?.(tempHeight);
                           setShowHeightSetting(false);
                         }}
-                        className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                        className="px-3 py-1 text-xs bg-[#50A69F] text-white rounded hover:bg-[#3A7A74] transition-colors"
                       >
                         適用
                       </button>
@@ -1165,7 +1354,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                       </div>
                       <button
                         onClick={() => setColorPickerOpen(null)}
-                        className="w-full px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                        className="w-full px-2 py-1 text-xs bg-[#50A69F] text-white rounded hover:bg-[#3A7A74] transition-colors"
                       >
                         閉じる
                       </button>
@@ -1182,7 +1371,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
       <div className={`${isMobile ? 'p-2' : 'p-4'}`}>
         <div className="w-full" style={{ height: `${isMobile ? Math.min(chartHeight, 300) : chartHeight}px` }}>
           <ResponsiveContainer width="100%" height="100%">
-            <ChartComponent
+            <ComposedChart
               data={chartData}
               margin={{
                 top: 25,  // 上部の余白を十分に確保
@@ -1190,7 +1379,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                 left: getResponsiveMargins().left,  // 常に4軸分のマージンを使用
                 bottom: isMobile ? 30 : 40
               }}
-              barCategoryGap={config.type === 'bar' ? '20%' : undefined}
+              barCategoryGap="20%"
             >
               <defs>
                 {visibleSeries.map(s => (
@@ -1289,22 +1478,57 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
               )}
 
               {/* データシリーズ */}
-              {visibleSeries.map(s => (
-                <DataComponent
-                  key={s.key}
-                  type="monotone"
-                  dataKey={s.key}
-                  stroke={s.color}
-                  fill={config.type === 'area' ? `url(#gradient-${s.key})` : s.color}
-                  strokeWidth={config.type === 'line' ? 1.5 : 1}
-                  yAxisId={s.yAxisId}
-                  dot={false}
-                  activeDot={{ r: 4, strokeWidth: 0 }}
-                  fillOpacity={(seriesOpacity[s.key] || 0.9) * (config.type === 'area' ? 1 : config.type === 'bar' ? 0.8 : 0.7)}
-                  strokeOpacity={seriesOpacity[s.key] || 0.9}
-                />
-              ))}
-            </ChartComponent>
+              {visibleSeries.map(s => {
+                const metricType = getMetricType(s.metric);
+                const baseProps = {
+                  dataKey: s.key,
+                  yAxisId: s.yAxisId,
+                  hide: hiddenSeries.has(s.key)
+                };
+
+                switch (metricType) {
+                  case 'bar':
+                    return (
+                      <Bar
+                        key={s.key}
+                        {...baseProps}
+                        fill={s.color}
+                        fillOpacity={(seriesOpacity[s.key] || 0.9) * 0.8}
+                      />
+                    );
+                  case 'area':
+                    return (
+                      <Area
+                        key={s.key}
+                        {...baseProps}
+                        type="monotone"
+                        stroke={s.color}
+                        fill={`url(#gradient-${s.key})`}
+                        fillOpacity={(seriesOpacity[s.key] || 0.9)}
+                        strokeWidth={isMobile ? 1.5 : 2}
+                        dot={false}
+                        connectNulls
+                        activeDot={{ r: 4, strokeWidth: 0 }}
+                        strokeOpacity={seriesOpacity[s.key] || 0.9}
+                      />
+                    );
+                  default: // 'line'
+                    return (
+                      <Line
+                        key={s.key}
+                        {...baseProps}
+                        type="monotone"
+                        stroke={s.color}
+                        strokeWidth={isMobile ? 1.5 : 2}
+                        dot={false}
+                        connectNulls
+                        activeDot={{ r: 4, strokeWidth: 0 }}
+                        strokeOpacity={seriesOpacity[s.key] || 0.9}
+                      />
+                    );
+                }
+              })}
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </div>

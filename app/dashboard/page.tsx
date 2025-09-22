@@ -231,10 +231,47 @@ export default function DashboardPage() {
   };
 
   const handleLoadPreset = (preset: ChartPreset) => {
+    console.log('Loading preset:', preset);
+    console.log('Current devices:', devices);
     setDateRange(preset.dateRange);
     // プリセットから全グラフを復元
     if (preset.graphs && preset.graphs.length > 0) {
-      setGraphs(preset.graphs.map(g => ({ ...g })));
+      // デバイスIDの検証とマッピング
+      const restoredGraphs = preset.graphs.map(g => {
+        const validDeviceIds = g.selectedDevices.filter(deviceId =>
+          devices.some(d => d.id === deviceId)
+        );
+
+        // メトリクスが設定されていない場合のデフォルト値
+        const validMetrics = g.selectedMetrics && g.selectedMetrics.length > 0
+          ? g.selectedMetrics
+          : ['temperature', 'humidity', 'power'] as MetricType[];
+
+        // 有効なデバイスがない場合、現在のデバイスから同じタイプのものを選択
+        if (validDeviceIds.length === 0 && devices.length > 0) {
+          console.warn(`No valid devices found for graph ${g.id}, selecting default devices`);
+          // 各タイプから1つずつデバイスを選択
+          const defaultDevices = [
+            devices.find(d => d.type === 'environmental')?.id,
+            devices.find(d => d.type === 'power')?.id,
+            devices.find(d => d.type === 'hvac')?.id
+          ].filter(Boolean) as string[];
+
+          return {
+            ...g,
+            selectedDevices: defaultDevices.length > 0 ? defaultDevices : [devices[0].id],
+            selectedMetrics: validMetrics
+          };
+        }
+
+        return {
+          ...g,
+          selectedDevices: validDeviceIds,
+          selectedMetrics: validMetrics
+        };
+      });
+
+      setGraphs(restoredGraphs);
     } else {
       // 旧形式のプリセットへの後方互換性
       console.warn('Loading old format preset, converting to new format');
@@ -324,7 +361,7 @@ export default function DashboardPage() {
                     onClick={() => toggleDrawer('presets')}
                     className={`flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-1.5 md:py-2 rounded-lg transition-all text-xs md:text-sm
                       ${openDrawer === 'presets'
-                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 shadow-sm border border-primary-200 dark:border-primary-800'
+                        ? 'bg-[#50A69F]/20 dark:bg-[#50A69F]/30 text-[#3A7A74] dark:text-[#6BBDB6] shadow-sm border border-[#50A69F]/30 dark:border-[#50A69F]/50'
                         : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border border-transparent'
                       }`}
                   >
@@ -346,7 +383,7 @@ export default function DashboardPage() {
                     <span className="text-gray-600 dark:text-gray-400">
                       <span className="font-semibold text-gray-900 dark:text-gray-100">{graphs.length}</span> グラフ表示中
                       {currentPresetName && (
-                        <span className="ml-2">/ プリセット: <span className="font-medium text-primary-600 dark:text-primary-400">{currentPresetName}</span></span>
+                        <span className="ml-2">/ プリセット: <span className="font-medium text-[#50A69F] dark:text-[#6BBDB6]">{currentPresetName}</span></span>
                       )}
                     </span>
                     {mounted && lastUpdate && (
@@ -406,7 +443,7 @@ export default function DashboardPage() {
                               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 プリセット管理
                                 {currentPresetId && (
-                                  <span className="ml-2 text-xs text-primary-600 dark:text-primary-400">
+                                  <span className="ml-2 text-xs text-[#50A69F] dark:text-[#6BBDB6]">
                                     (現在: {presets.find(p => p.id === currentPresetId)?.name})
                                   </span>
                                 )}
@@ -427,7 +464,7 @@ export default function DashboardPage() {
                                     console.log('Save button clicked');
                                     setShowSavePreset(!showSavePreset);
                                   }}
-                                  className="flex items-center space-x-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium"
+                                  className="flex items-center space-x-1 px-3 py-1.5 bg-[#50A69F] hover:bg-[#3A7A74] text-white rounded text-sm font-medium"
                                 >
                                   <Plus className="w-4 h-4" />
                                   <span>新規保存</span>
@@ -444,7 +481,7 @@ export default function DashboardPage() {
                                   value={presetName}
                                   onChange={(e) => setPresetName(e.target.value)}
                                   placeholder="プリセット名を入力"
-                                  className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                                  className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#50A69F] text-sm"
                                   autoFocus
                                   onCompositionStart={() => setIsComposing(true)}
                                   onCompositionEnd={() => setIsComposing(false)}
@@ -459,7 +496,7 @@ export default function DashboardPage() {
                                 <button
                                   onClick={handleSavePreset}
                                   disabled={!presetName.trim()}
-                                  className="px-3 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                                  className="px-3 py-2 bg-[#50A69F] hover:bg-[#3A7A74] disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
                                 >
                                   保存
                                 </button>
@@ -512,7 +549,7 @@ export default function DashboardPage() {
                                               setEditingPresetName('');
                                             }
                                           }}
-                                          className="flex-1 px-2 py-1 bg-white dark:bg-gray-900 border border-primary-500 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                                          className="flex-1 px-2 py-1 bg-white dark:bg-gray-900 border border-[#50A69F] rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#50A69F]"
                                           autoFocus
                                         />
                                       </div>
@@ -523,7 +560,7 @@ export default function DashboardPage() {
                                             {preset.name}
                                           </span>
                                           {currentPresetId === preset.id && (
-                                            <span className="px-2 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs rounded-full">
+                                            <span className="px-2 py-0.5 bg-[#50A69F]/20 dark:bg-[#50A69F]/30 text-[#3A7A74] dark:text-[#6BBDB6] text-xs rounded-full">
                                               使用中
                                             </span>
                                           )}
@@ -601,7 +638,7 @@ export default function DashboardPage() {
                           type="text"
                           value={graph.title}
                           onChange={(e) => updateGraph(graph.id, { title: e.target.value })}
-                          className="text-base md:text-lg font-semibold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-2 py-1 flex-1 min-w-0"
+                          className="text-base md:text-lg font-semibold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-[#50A69F] rounded px-2 py-1 flex-1 min-w-0"
                           placeholder="グラフタイトル"
                         />
                       </div>
@@ -611,7 +648,7 @@ export default function DashboardPage() {
                           onClick={() => toggleGraphDrawer(graph.id, 'period')}
                           className={`flex items-center space-x-1 px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs md:text-sm transition-all ${
                             graphDrawer?.graphId === graph.id && graphDrawer?.type === 'period'
-                              ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                              ? 'bg-[#50A69F]/20 dark:bg-[#50A69F]/30 text-[#3A7A74] dark:text-[#6BBDB6]'
                               : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
                           }`}
                         >
@@ -628,7 +665,7 @@ export default function DashboardPage() {
                           onClick={() => toggleGraphDrawer(graph.id, 'devices')}
                           className={`flex items-center space-x-1 px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs md:text-sm transition-all ${
                             graphDrawer?.graphId === graph.id && graphDrawer?.type === 'devices'
-                              ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                              ? 'bg-[#50A69F]/20 dark:bg-[#50A69F]/30 text-[#3A7A74] dark:text-[#6BBDB6]'
                               : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
                           }`}
                         >
@@ -641,7 +678,7 @@ export default function DashboardPage() {
                           onClick={() => toggleGraphDrawer(graph.id, 'metrics')}
                           className={`flex items-center space-x-1 px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs md:text-sm transition-all ${
                             graphDrawer?.graphId === graph.id && graphDrawer?.type === 'metrics'
-                              ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                              ? 'bg-[#50A69F]/20 dark:bg-[#50A69F]/30 text-[#3A7A74] dark:text-[#6BBDB6]'
                               : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
                           }`}
                         >

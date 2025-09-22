@@ -68,6 +68,13 @@ export interface ChartConfig {
     [key: string]: AxisConfig;  // メトリクスごとの独立した設定
   };
   xAxisConfig?: AxisConfig;
+  metricTypes?: {
+    [key: string]: 'line' | 'bar' | 'area';  // メトリクスごとのグラフタイプ
+  };
+  commonTickCount?: number;  // Y軸共通目盛り数
+  hiddenSeries?: string[];  // 非表示の系列
+  normalizeData?: boolean;  // 正規化の有効/無効
+  seriesOpacity?: Record<string, number>;  // 系列ごとの不透明度
 }
 
 export type ComparisonMode = 
