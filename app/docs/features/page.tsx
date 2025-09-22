@@ -188,21 +188,9 @@ export default function FeaturesDoc() {
               ]
             },
             {
-              name: 'Multi-Axis（複数軸）※',
-              icon: TrendingUp,
-              location: 'エクスポートボタンの右',
-              description: '【注意：現在未実装】メトリックごとの独立軸',
-              implementation: [
-                'トグルボタンは存在するが機能しない',
-                '実装予定：異なるメトリックを別々のY軸で表示',
-                '実装予定：各軸の範囲自動調整',
-                '現状：単一Y軸のみ動作'
-              ]
-            },
-            {
               name: '凡例表示',
               icon: Settings,
-              location: 'Multi-Axisの右',
+              location: 'CSVエクスポートの右',
               description: '凡例の表示/非表示',
               implementation: [
                 'ON/OFF トグル',
