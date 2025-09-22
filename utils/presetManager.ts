@@ -21,7 +21,7 @@ export const getPresets = (): ChartPreset[] => {
   try {
     const presets = JSON.parse(stored);
     // Convert date strings back to Date objects
-    return presets.map((p: any) => ({
+    return presets.map((p: ChartPreset & { createdAt: string | Date; updatedAt: string | Date; dateRange: { start: string | Date; end: string | Date } }) => ({
       ...p,
       dateRange: {
         start: new Date(p.dateRange.start),

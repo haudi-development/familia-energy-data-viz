@@ -106,7 +106,7 @@ const DataChart: React.FC<DataChartProps> = ({
   const chartData = useMemo(() => {
     if (!data.length) return [];
 
-    const dataByTimestamp = new Map<number, any>();
+    const dataByTimestamp = new Map<number, Record<string, unknown>>();
 
     data.forEach(sensorData => {
       const seriesKey = `${sensorData.deviceId}_${sensorData.metric}`;
@@ -215,14 +215,24 @@ const DataChart: React.FC<DataChartProps> = ({
   const DataComponent = config.type === 'bar' ? Bar : 
                         config.type === 'area' ? Area : Line;
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: {
+    active?: boolean;
+    payload?: Array<{
+      value: number;
+      name: string;
+      color: string;
+      dataKey: string;
+      payload: Record<string, unknown>;
+    }>;
+    label?: string;
+  }) => {
     if (!active || !payload) return null;
 
     return (
       <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-4 rounded-xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
         <p className="font-semibold text-gray-900 dark:text-gray-100 mb-3 text-sm">{label}</p>
         <div className="space-y-1">
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <div key={index} className="flex items-center justify-between space-x-4 text-sm">
               <div className="flex items-center space-x-2">
                 <div 
@@ -534,7 +544,7 @@ const DataChart: React.FC<DataChartProps> = ({
                   height={40} 
                   stroke="#9ca3af"
                   fill="#f3f4f6"
-                  onChange={(domain: any) => setZoomDomain(domain)}
+                  onChange={(domain: { startIndex?: number; endIndex?: number }) => setZoomDomain(domain)}
                 />
               )}
 

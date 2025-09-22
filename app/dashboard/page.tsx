@@ -7,16 +7,15 @@ import DateRangeSelector from '@/components/DateRangeSelector';
 import DeviceSelector from '@/components/DeviceSelector';
 import MetricSelector from '@/components/MetricSelector';
 import DataChartAdvanced from '@/components/DataChartAdvanced';
-import { 
-  generateDevices, 
-  generateSensorData, 
-  generateRealtimeUpdate,
-  generateAlerts 
+import {
+  generateDevices,
+  generateSensorData,
+  generateAlerts
 } from '@/utils/mockDataGenerator';
-import { Device, DateRange, SensorData, ChartConfig, Alert, MetricType, ChartPreset, GraphConfigItem } from '@/types';
+import { Device, DateRange, SensorData, Alert, MetricType, ChartPreset, GraphConfigItem } from '@/types';
 import { subDays, format } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Calendar, Monitor, BarChart3, ChevronDown, ChevronUp, X, Save, Bookmark, Trash2, Plus, Grid2x2, LayoutGrid, Columns, Edit2, RefreshCw } from 'lucide-react';
+import { Calendar, Monitor, BarChart3, ChevronDown, ChevronUp, X, Bookmark, Trash2, Plus, Edit2, RefreshCw } from 'lucide-react';
 import { savePreset, getPresets, deletePreset } from '@/utils/presetManager';
 
 type DrawerType = 'period' | 'devices' | 'metrics' | 'presets' | null;
@@ -27,10 +26,10 @@ export default function DashboardPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [devices, setDevices] = useState<Device[]>([]);
   const [dateRange, setDateRange] = useState<DateRange>({
-    start: null as any,
-    end: null as any
+    start: new Date(),
+    end: new Date()
   });
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [alerts] = useState<Alert[]>([]);
   const [graphs, setGraphs] = useState<GraphConfigItem[]>([]);
   const [realtimeEnabled, setRealtimeEnabled] = useState(false);
   const [realtimeInterval, setRealtimeInterval] = useState(5);
@@ -39,7 +38,7 @@ export default function DashboardPage() {
   const [presets, setPresets] = useState<ChartPreset[]>([]);
   const [presetName, setPresetName] = useState('');
   const [showSavePreset, setShowSavePreset] = useState(false);
-  const [activeGraphId, setActiveGraphId] = useState<string | null>(null);
+  // const [activeGraphId, setActiveGraphId] = useState<string | null>(null);
   const [graphDrawer, setGraphDrawer] = useState<{ graphId: string; type: 'devices' | 'metrics' | 'period' } | null>(null);
   const [currentPresetId, setCurrentPresetId] = useState<string | null>(null);
   const [currentPresetName, setCurrentPresetName] = useState<string | null>(null);
@@ -71,10 +70,10 @@ export default function DashboardPage() {
         // 旧形式のプリセットへの後方互換性
         setGraphs([{
           id: 'graph-1',
-          title: (firstPreset as any).chartTitle || firstPreset.name,
-          selectedDevices: (firstPreset as any).selectedDevices || [],
-          selectedMetrics: (firstPreset as any).selectedMetrics || [],
-          chartConfig: (firstPreset as any).chartConfig || {
+          title: (firstPreset as unknown as { chartTitle?: string }).chartTitle || firstPreset.name,
+          selectedDevices: (firstPreset as unknown as { selectedDevices?: string[] }).selectedDevices || [],
+          selectedMetrics: (firstPreset as unknown as { selectedMetrics?: MetricType[] }).selectedMetrics || [],
+          chartConfig: (firstPreset as unknown as { chartConfig?: ChartConfig }).chartConfig || {
             type: 'line',
             showLegend: true,
             enableZoom: true,
@@ -82,7 +81,7 @@ export default function DashboardPage() {
             showGrid: true,
             displayMode: 'standard'
           },
-          customColors: (firstPreset as any).customColors || {},
+          customColors: (firstPreset as unknown as { customColors?: Record<string, string> }).customColors || {},
           expanded: true
         }]);
       }
@@ -145,9 +144,10 @@ export default function DashboardPage() {
     }
   };
 
-  const dismissAlert = useCallback((alertId: string) => {
-    setAlerts(prev => prev.filter(a => a.id !== alertId));
-  }, []);
+  // Alert dismissal function - currently unused but kept for future alert management
+  // const dismissAlert = useCallback((alertId: string) => {
+  //   setAlerts(prev => prev.filter(a => a.id !== alertId));
+  // }, []);
 
   const addGraph = () => {
     const newGraph: GraphConfigItem = {
@@ -277,17 +277,17 @@ export default function DashboardPage() {
       console.warn('Loading old format preset, converting to new format');
       setGraphs([{
         id: 'graph-1',
-        title: (preset as any).chartTitle || preset.name,
-        selectedDevices: (preset as any).selectedDevices || [],
-        selectedMetrics: (preset as any).selectedMetrics || [],
-        chartConfig: (preset as any).chartConfig || {
+        title: (preset as unknown as { chartTitle?: string }).chartTitle || preset.name,
+        selectedDevices: (preset as unknown as { selectedDevices?: string[] }).selectedDevices || [],
+        selectedMetrics: (preset as unknown as { selectedMetrics?: MetricType[] }).selectedMetrics || [],
+        chartConfig: (preset as unknown as { chartConfig?: ChartConfig }).chartConfig || {
           type: 'line',
           showLegend: true,
           enableZoom: true,
           multiAxis: false,
           displayMode: 'standard'
         },
-        customColors: (preset as any).customColors || {},
+        customColors: (preset as unknown as { customColors?: Record<string, string> }).customColors || {},
         expanded: true,
         dateRange: preset.dateRange
       }]);
@@ -622,7 +622,7 @@ export default function DashboardPage() {
           {/* Main Chart Area */}
           <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto space-y-4 p-3 md:p-6">
-              {graphs.map((graph, index) => (
+              {graphs.map((graph) => (
                 <div key={graph.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
                   {/* Graph Header */}
                   <div className="px-3 md:px-4 py-2 md:py-3 border-b border-gray-200 dark:border-gray-700">

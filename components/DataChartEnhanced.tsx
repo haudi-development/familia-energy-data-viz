@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react';
-import { 
-  LineChart, Line, BarChart, Bar, AreaChart, Area,
+import {
+  LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  ReferenceLine, Brush, ComposedChart
+  Brush, ComposedChart
 } from 'recharts';
 import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
+// import { ja } from 'date-fns/locale';
 import { SensorData, ChartConfig, MetricType } from '../types';
 import { useTranslation } from 'react-i18next';
-import { Settings, Maximize2, Download, TrendingUp, Grid3x3, Layers, GitBranch } from 'lucide-react';
+import { TrendingUp, Grid3x3, Layers, GitBranch } from 'lucide-react';
 
 interface DataChartProps {
   data: SensorData[];
@@ -44,7 +44,7 @@ const DataChartEnhanced: React.FC<DataChartProps> = ({ data, config, onConfigCha
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [];
 
-    const timeMap = new Map<string, any>();
+    const timeMap = new Map<string, Record<string, unknown>>();
     
     data.forEach(sensor => {
       sensor.data.forEach(point => {
@@ -96,12 +96,22 @@ const DataChartEnhanced: React.FC<DataChartProps> = ({ data, config, onConfigCha
   }, [data, t]);
 
   // カスタムツールチップ
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: {
+    active?: boolean;
+    payload?: Array<{
+      value: number;
+      name: string;
+      color: string;
+      dataKey: string;
+      payload: Record<string, unknown>;
+    }>;
+    label?: string;
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
           <p className="font-medium text-gray-900 dark:text-gray-100 mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => {
+          {payload.map((entry, index) => {
             const originalValue = config.displayMode === 'normalized' 
               ? entry.payload[`${entry.dataKey}_original`]
               : entry.value;
@@ -193,10 +203,10 @@ const DataChartEnhanced: React.FC<DataChartProps> = ({ data, config, onConfigCha
         </div>
         
         <div className="flex-1 grid grid-rows-auto gap-4 overflow-auto">
-          {metricGroups.map((metric, index) => {
+          {metricGroups.map((metric) => {
             const metricData = data.filter(d => d.metric === metric);
-            const metricChartData = useMemo(() => {
-              const timeMap = new Map<string, any>();
+            const metricChartData = (() => {
+              const timeMap = new Map<string, Record<string, unknown>>();
               metricData.forEach(sensor => {
                 sensor.data.forEach(point => {
                   const timeKey = format(point.timestamp, 'HH:mm');
@@ -207,10 +217,10 @@ const DataChartEnhanced: React.FC<DataChartProps> = ({ data, config, onConfigCha
                   dataPoint[`${sensor.deviceId}`] = point.value;
                 });
               });
-              return Array.from(timeMap.values()).sort((a, b) => 
-                a.timestamp.getTime() - b.timestamp.getTime()
+              return Array.from(timeMap.values()).sort((a, b) =>
+                (a.timestamp as Date).getTime() - (b.timestamp as Date).getTime()
               );
-            }, [metricData]);
+            })();
 
             return (
               <div key={metric} className="border border-gray-200 dark:border-gray-700 rounded-lg p-2">

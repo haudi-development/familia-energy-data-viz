@@ -2,11 +2,11 @@ import React, { useState, useMemo, useRef, useCallback, memo, useEffect } from '
 import { useTranslation } from 'react-i18next';
 import {
   ComposedChart, Line, Bar, Area,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  XAxis, YAxis, Tooltip,
   ResponsiveContainer, Brush, ReferenceLine
 } from 'recharts';
 import { format } from 'date-fns';
-import { TrendingUp, Download, Settings, RotateCcw, BarChart3, Activity, Layers, Edit2, Check, X, Sliders, Grid3x3, Camera } from 'lucide-react';
+import { Download, RotateCcw, BarChart3, Activity, Layers, Edit2, Check, X, Sliders, Grid3x3, Camera } from 'lucide-react';
 import { SensorData, ChartConfig, MetricType, AxisConfig } from '../types';
 import html2canvas from 'html2canvas';
 
@@ -229,7 +229,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
   const chartData = useMemo(() => {
     if (!data.length) return [];
 
-    const dataByTimestamp = new Map<number, any>();
+    const dataByTimestamp = new Map<number, Record<string, unknown>>();
 
     data.forEach(sensorData => {
       const seriesKey = `${sensorData.deviceId}_${sensorData.metric}`;
@@ -305,7 +305,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
       const unit = METRIC_UNITS[sensorData.metric];
 
       // メトリクスタイプに応じたデフォルト色を使用
-      const color = customColors[key] || METRIC_COLORS[sensorData.metric] || defaultColorPalette[colorIndex % defaultColorPalette.length];
+      const color = customColors[key] || (METRIC_COLORS as Record<string, string>)[sensorData.metric] || defaultColorPalette[colorIndex % defaultColorPalette.length];
 
       uniqueSeries.push({
         key,
@@ -427,14 +427,24 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
     return config.metricTypes?.[metric] || config.type || 'line';
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: {
+    active?: boolean;
+    payload?: Array<{
+      value: number;
+      name: string;
+      color: string;
+      dataKey: string;
+      payload: Record<string, unknown>;
+    }>;
+    label?: string;
+  }) => {
     if (!active || !payload) return null;
 
     return (
       <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-3 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
         <p className="font-medium text-gray-900 dark:text-gray-100 mb-2 text-sm">{label}</p>
         <div className="space-y-1">
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <div key={index} className="flex items-center justify-between space-x-3 text-xs">
               <div className="flex items-center space-x-1.5">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
@@ -453,7 +463,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
   };
 
   // 軸設定のダイアログをメモ化
-  const AxisSettingsDialog = memo(({ side, metric }: { side: 'left' | 'right' | 'x', metric?: string }) => {
+  const AxisSettingsDialog = memo(function AxisSettingsDialog({ side, metric }: { side: 'left' | 'right' | 'x', metric?: string }) {
     // メトリクスごとの独立した設定を取得
     const currentConfig = side === 'x' ? config.xAxisConfig || {} : (metric ? config.yAxisConfig?.[metric] || {} : {});
     const defaultRange = metric ? METRIC_RANGES[metric as MetricType] : [0, 100];
@@ -718,12 +728,12 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
       const isOuter = position.side === 'left2' || position.side === 'right2';
       const axisOffset = position.side === 'left2' ? 15 : position.side === 'right2' ? 30 : 0;
 
-      const axisProps: any = {
+      const axisProps = {
         yAxisId: metric,
         orientation: orientation,
         stroke: color,
         tick: { fontSize: fontSizes.tick, fill: color, dx: tickDx },
-        tickFormatter: (value: any) => Math.round(value).toString(),
+        tickFormatter: (value: number) => Math.round(value).toString(),
         width: width,
         domain: [min, max],
         scale: "linear",
@@ -1471,7 +1481,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                   height={20}
                   stroke="#9ca3af"
                   fill="#f3f4f6"
-                  onChange={(domain: any) => setZoomDomain(domain)}
+                  onChange={(domain: { startIndex?: number; endIndex?: number }) => setZoomDomain(domain)}
                   travellerWidth={8}
                   tickFormatter={(value: string) => value.slice(0, 5)}
                 />

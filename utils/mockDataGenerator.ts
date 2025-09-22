@@ -1,5 +1,5 @@
 import { Device, DeviceType, SensorData, DataPoint, MetricType, FacilityType, Alert } from '../types';
-import { addMinutes, addHours, addDays, subDays, startOfDay } from 'date-fns';
+import { addMinutes, subDays } from 'date-fns';
 
 const FACILITIES = {
   office: {
@@ -59,7 +59,7 @@ function generateDeviceId(facility: string, type: DeviceType, index: number): st
   return `${facility}-${type}-${String(index).padStart(3, '0')}`;
 }
 
-function generateDeviceName(type: DeviceType, location: any, index: number): string {
+function generateDeviceName(type: DeviceType, location: { floor: number; area: string }, index: number): string {
   const typeLabels = {
     environmental: 'ENV Sensor',
     power: 'Power Meter',

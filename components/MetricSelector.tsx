@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Activity, Droplets, Wind, Zap, Users, Sun, CheckSquare, Square, Thermometer } from 'lucide-react';
+import { Droplets, Wind, Zap, Users, Sun, CheckSquare, Square, Thermometer } from 'lucide-react';
 import { MetricType } from '../types';
 
 interface MetricSelectorProps {
