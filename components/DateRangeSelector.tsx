@@ -15,6 +15,12 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({ value, onChange }
   const { t } = useTranslation();
   const [showCustom, setShowCustom] = useState(false);
 
+  // Ensure value has valid start and end dates
+  const safeValue = {
+    start: value?.start || new Date(Date.now() - 24 * 60 * 60 * 1000), // default to 1 day ago
+    end: value?.end || new Date()
+  };
+
   const presets = [
     { label: t('dateRange.3hours'), getValue: () => ({ start: addHours(new Date(), -3), end: new Date() }) },
     { label: t('dateRange.1day'), getValue: () => ({ start: addDays(new Date(), -1), end: new Date() }) },
@@ -78,11 +84,11 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({ value, onChange }
               {t('dateRange.from')}
             </label>
             <DatePicker
-              selected={value.start}
-              onChange={(date) => date && onChange({ ...value, start: date })}
+              selected={safeValue.start}
+              onChange={(date) => date && onChange({ ...safeValue, start: date })}
               selectsStart
-              startDate={value.start}
-              endDate={value.end}
+              startDate={safeValue.start}
+              endDate={safeValue.end}
               showTimeSelect
               timeFormat="HH:mm"
               timeIntervals={15}
@@ -90,7 +96,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({ value, onChange }
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 
                 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent
                 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              maxDate={value.end}
+              maxDate={safeValue.end}
             />
           </div>
           <div>
@@ -98,11 +104,11 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({ value, onChange }
               {t('dateRange.to')}
             </label>
             <DatePicker
-              selected={value.end}
-              onChange={(date) => date && onChange({ ...value, end: date })}
+              selected={safeValue.end}
+              onChange={(date) => date && onChange({ ...safeValue, end: date })}
               selectsEnd
-              startDate={value.start}
-              endDate={value.end}
+              startDate={safeValue.start}
+              endDate={safeValue.end}
               showTimeSelect
               timeFormat="HH:mm"
               timeIntervals={15}
@@ -110,7 +116,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({ value, onChange }
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 
                 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent
                 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              minDate={value.start}
+              minDate={safeValue.start}
               maxDate={new Date()}
             />
           </div>
@@ -120,9 +126,9 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({ value, onChange }
       {/* Current Selection Display */}
       <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center space-x-2">
         <span className="font-medium">{t('dateRange.label')}:</span>
-        <span>{value.start.toLocaleString()}</span>
+        <span>{safeValue.start.toLocaleString()}</span>
         <span>→</span>
-        <span>{value.end.toLocaleString()}</span>
+        <span>{safeValue.end.toLocaleString()}</span>
       </div>
     </div>
   );
