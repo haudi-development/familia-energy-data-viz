@@ -486,7 +486,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
     return (
       <div className="fixed z-50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 p-4 w-72">
         <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
-          {side === 'x' ? '横軸の設定' : `${axisLabel}の軸の設定`}
+          {side === 'x' ? t('chart.xAxisSettings') : `${axisLabel}${t('chart.axisSettings')}`}
         </h4>
         <div className="space-y-3">
           {side === 'x' ? (
@@ -617,7 +617,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
             domain[0] + (domain[1] - domain[0]) * (i / (commonTickCount - 1))
           )}
           label={{
-            value: normalizeData ? '正規化値 (%)' : `${metricLabel} (${unit})`,
+            value: normalizeData ? t('chart.normalizedValue') : `${metricLabel} (${unit})`,
             angle: -90,
             position: 'insideLeft',
             offset: 10,
@@ -860,7 +860,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
           <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setShowAxisConfig(false)} />
           <div className="fixed z-50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 w-96 max-h-[80vh] overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">軸の設定</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('chart.axisSettings')}</h3>
             </div>
 
             {/* タブ */}
@@ -1162,9 +1162,9 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                   onConfigChange(newConfig);
                 }}
                 className="px-2 py-1 text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
-                title="すべての個別設定をリセット"
+                title={t('chart.resetAllSettings')}
               >
-                個別設定をリセット
+                {t('chart.resetSettings')}
               </button>
             )}
 
@@ -1184,7 +1184,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
-              {normalizeData ? '正規化' : '実数値'}
+              {normalizeData ? t('chart.normalize') : t('chart.realValue')}
             </button>
 
             {/* アクションボタン */}
@@ -1192,14 +1192,14 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
               <button
                 onClick={resetZoom}
                 className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded hover:bg-white/50 dark:hover:bg-gray-600"
-                title="リセット"
+                title={t('chart.reset')}
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={handleExport}
                 className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded hover:bg-white/50 dark:hover:bg-gray-600"
-                title="エクスポート"
+                title={t('chart.export')}
               >
                 <Download className="w-3.5 h-3.5" />
               </button>
@@ -1224,7 +1224,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
                     ? 'text-[#50A69F] dark:text-[#6BBDB6] bg-[#50A69F]/20 dark:bg-[#50A69F]/30'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white/50 dark:hover:bg-gray-600'
                 }`}
-                title="グリッド"
+                title={t('chart.grid')}
               >
                 <Grid3x3 className="w-3.5 h-3.5" />
               </button>
@@ -1302,7 +1302,7 @@ const DataChartAdvanced: React.FC<DataChartAdvancedProps> = ({
         </div>
       </div>
 
-      {/* 凡例 */}
+      {/* Legend */}
       {config.showLegend && (
         <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900/30 border-b border-gray-200 dark:border-gray-700">
           <div className="flex flex-wrap gap-2">
