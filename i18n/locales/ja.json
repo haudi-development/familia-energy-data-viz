@@ -132,5 +132,46 @@
     "ja": "日本語",
     "en": "English",
     "vi": "Tiếng Việt"
+  },
+  "dashboard": {
+    "preset": {
+      "title": "プリセット管理",
+      "save": "プリセット保存",
+      "load": "プリセット読込",
+      "update": "更新",
+      "delete": "削除",
+      "rename": "名前変更",
+      "namePlaceholder": "プリセット名を入力",
+      "savedMessage": "プリセットを保存しました",
+      "updatedMessage": "プリセットを更新しました",
+      "saveError": "プリセットの保存に失敗しました",
+      "lastGraphError": "最後のグラフは削除できません",
+      "currentPreset": "現在のプリセット"
+    },
+    "graph": {
+      "addNew": "新しいグラフを追加",
+      "period": "期間",
+      "device": "デバイス",
+      "metric": "メトリック",
+      "periodNotSet": "期間未設定",
+      "selectDevices": "デバイス選択",
+      "selectMetrics": "メトリック選択",
+      "selectAll": "すべて選択",
+      "clearAll": "すべて解除",
+      "noDataAvailable": "データがありません",
+      "remove": "グラフを削除"
+    },
+    "realtime": {
+      "title": "リアルタイム",
+      "on": "ON",
+      "off": "OFF",
+      "lastUpdate": "更新"
+    },
+    "alerts": {
+      "title": "アラート",
+      "critical": "重大",
+      "warning": "警告",
+      "info": "情報"
+    }
   }
 }

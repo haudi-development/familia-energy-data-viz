@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import Sidebar from '@/components/Sidebar';
 import DateRangeSelector from '@/components/DateRangeSelector';
 import DeviceSelector from '@/components/DeviceSelector';
@@ -14,13 +16,16 @@ import {
 } from '@/utils/mockDataGenerator';
 import { Device, DateRange, SensorData, Alert, MetricType, ChartPreset, GraphConfigItem, ChartConfig } from '@/types';
 import { subDays, format } from 'date-fns';
-import { ja } from 'date-fns/locale';
-import { Calendar, Monitor, BarChart3, ChevronDown, ChevronUp, X, Bookmark, Trash2, Plus, Edit2, RefreshCw } from 'lucide-react';
+import { ja, vi } from 'date-fns/locale';
+import { Calendar, Monitor, BarChart3, ChevronDown, ChevronUp, X, Bookmark, Trash2, Plus, Edit2, RefreshCw, Globe } from 'lucide-react';
 import { savePreset, getPresets, deletePreset } from '@/utils/presetManager';
 
 type DrawerType = 'period' | 'devices' | 'metrics' | 'presets' | null;
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
+  const { language, setLanguage } = useLanguage();
+
   // State Management
   const [openDrawer, setOpenDrawer] = useState<DrawerType>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -178,7 +183,7 @@ export default function DashboardPage() {
 
   const removeGraph = (graphId: string) => {
     if (graphs.length <= 1) {
-      alert('最後のグラフは削除できません');
+      alert(t('dashboard.preset.lastGraphError'));
       return;
     }
     setGraphs(graphs.filter(g => g.id !== graphId));
@@ -223,10 +228,10 @@ export default function DashboardPage() {
       setCurrentPresetName(newPreset.name);
       setPresetName('');
       setShowSavePreset(false);
-      alert('プリセットを保存しました');
+      alert(t('dashboard.preset.savedMessage'));
     } catch (error) {
       console.error('Error saving preset:', error);
-      alert('プリセットの保存に失敗しました: ' + error);
+      alert(t('dashboard.preset.saveError') + ': ' + error);
     }
   };
 
@@ -313,7 +318,7 @@ export default function DashboardPage() {
 
     savePreset(updatedPreset);
     setPresets(getPresets());
-    alert(`プリセット 「${preset.name}」 を更新しました`);
+    alert(`${t('dashboard.preset.updatedMessage')}: ${preset.name}`);
   };
 
   const handleRenamePreset = (presetId: string, newName: string) => {
@@ -368,7 +373,7 @@ export default function DashboardPage() {
                   >
                     <Bookmark className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     <div className="text-left">
-                      <div className="text-xs opacity-75 hidden md:block">プリセット</div>
+                      <div className="text-xs opacity-75 hidden md:block">{t('dashboard.preset.title').replace('管理', '')}</div>
                       <div className="font-medium">
                         {presets.length > 0 ? `${presets.length} 件` : '未保存'}
                       </div>
@@ -384,13 +389,13 @@ export default function DashboardPage() {
                     <span className="text-gray-600 dark:text-gray-400">
                       <span className="font-semibold text-gray-900 dark:text-gray-100">{graphs.length}</span> グラフ表示中
                       {currentPresetName && (
-                        <span className="ml-2">/ プリセット: <span className="font-medium text-[#50A69F] dark:text-[#6BBDB6]">{currentPresetName}</span></span>
+                        <span className="ml-2">/ {t('dashboard.preset.title').replace('管理', '')}: <span className="font-medium text-[#50A69F] dark:text-[#6BBDB6]">{currentPresetName}</span></span>
                       )}
                     </span>
                     {mounted && lastUpdate && (
                       <span className="text-gray-600 dark:text-gray-400">
-                        更新: <span className="font-medium text-gray-900 dark:text-gray-100">
-                          {format(lastUpdate, 'HH:mm:ss', { locale: ja })}
+                        {t('dashboard.realtime.lastUpdate')}: <span className="font-medium text-gray-900 dark:text-gray-100">
+                          {format(lastUpdate, 'HH:mm:ss', { locale: language === 'ja' ? ja : vi })}
                         </span>
                       </span>
                     )}
@@ -399,6 +404,20 @@ export default function DashboardPage() {
 
                 {/* Right Controls */}
                 <div className="flex items-center space-x-2 md:space-x-3">
+                  {/* Language Toggle */}
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => setLanguage(language === 'ja' ? 'vi' : 'ja')}
+                      className="flex items-center space-x-1 md:space-x-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all
+                        bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-200"
+                      title={t('language.label')}
+                    >
+                      <Globe className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                      <span className="hidden sm:inline">{language === 'ja' ? '日本語' : 'Tiếng Việt'}</span>
+                      <span className="sm:hidden">{language === 'ja' ? 'JP' : 'VI'}</span>
+                    </button>
+                  </div>
+
                   {/* Realtime Toggle */}
                   <div className="flex items-center space-x-2">
                     <button
@@ -410,8 +429,8 @@ export default function DashboardPage() {
                         }`}
                     >
                       {realtimeEnabled && <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />}
-                      <span className="hidden sm:inline">{realtimeEnabled ? 'リアルタイム ON' : 'リアルタイム OFF'}</span>
-                      <span className="sm:hidden">{realtimeEnabled ? 'ON' : 'OFF'}</span>
+                      <span className="hidden sm:inline">{realtimeEnabled ? `${t('dashboard.realtime.title')} ${t('dashboard.realtime.on')}` : `${t('dashboard.realtime.title')} ${t('dashboard.realtime.off')}`}</span>
+                      <span className="sm:hidden">{realtimeEnabled ? t('dashboard.realtime.on') : t('dashboard.realtime.off')}</span>
                     </button>
                     {realtimeEnabled && (
                       <select
@@ -442,10 +461,10 @@ export default function DashboardPage() {
                           <div className="mb-3">
                             <div className="flex items-center justify-between">
                               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                プリセット管理
+                                {t('dashboard.preset.title')}
                                 {currentPresetId && (
                                   <span className="ml-2 text-xs text-[#50A69F] dark:text-[#6BBDB6]">
-                                    (現在: {presets.find(p => p.id === currentPresetId)?.name})
+                                    ({t('dashboard.preset.currentPreset')}: {presets.find(p => p.id === currentPresetId)?.name})
                                   </span>
                                 )}
                               </h3>
@@ -454,10 +473,10 @@ export default function DashboardPage() {
                                   <button
                                     onClick={handleUpdatePreset}
                                     className="flex items-center space-x-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium"
-                                    title="現在のプリセットを上書き保存"
+                                    title={t('dashboard.preset.update')}
                                   >
                                     <RefreshCw className="w-4 h-4" />
-                                    <span>上書き保存</span>
+                                    <span>{t('dashboard.preset.update')}</span>
                                   </button>
                                 )}
                                 <button
@@ -468,7 +487,7 @@ export default function DashboardPage() {
                                   className="flex items-center space-x-1 px-3 py-1.5 bg-[#50A69F] hover:bg-[#3A7A74] text-white rounded text-sm font-medium"
                                 >
                                   <Plus className="w-4 h-4" />
-                                  <span>新規保存</span>
+                                  <span>{t('dashboard.preset.save')}</span>
                                 </button>
                               </div>
                             </div>
@@ -481,7 +500,7 @@ export default function DashboardPage() {
                                   type="text"
                                   value={presetName}
                                   onChange={(e) => setPresetName(e.target.value)}
-                                  placeholder="プリセット名を入力"
+                                  placeholder={t('dashboard.preset.namePlaceholder')}
                                   className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#50A69F] text-sm"
                                   autoFocus
                                   onCompositionStart={() => setIsComposing(true)}
@@ -499,7 +518,7 @@ export default function DashboardPage() {
                                   disabled={!presetName.trim()}
                                   className="px-3 py-2 bg-[#50A69F] hover:bg-[#3A7A74] disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
                                 >
-                                  保存
+                                  {t('common.save')}
                                 </button>
                                 <button
                                   onClick={() => {
@@ -508,7 +527,7 @@ export default function DashboardPage() {
                                   }}
                                   className="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
                                 >
-                                  キャンセル
+                                  {t('common.cancel')}
                                 </button>
                               </div>
                             </div>
@@ -580,7 +599,7 @@ export default function DashboardPage() {
                                         setEditingPresetName(preset.name);
                                       }}
                                       className="p-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                      title="名前を変更"
+                                      title={t('dashboard.preset.rename')}
                                     >
                                       <Edit2 className="w-4 h-4" />
                                     </button>
@@ -590,7 +609,7 @@ export default function DashboardPage() {
                                         handleDeletePreset(preset.id);
                                       }}
                                       className="p-1.5 text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                                      title="削除"
+                                      title={t('common.delete')}
                                     >
                                       <Trash2 className="w-4 h-4" />
                                     </button>
@@ -656,10 +675,10 @@ export default function DashboardPage() {
                           <Calendar className="w-3 h-3 md:w-3.5 md:h-3.5" />
                           <span className="hidden sm:inline">
                             {graph.dateRange && graph.dateRange.start && graph.dateRange.end
-                              ? `${format(graph.dateRange.start, 'MM/dd', { locale: ja })} - ${format(graph.dateRange.end, 'MM/dd', { locale: ja })}`
-                              : '期間未設定'}
+                              ? `${format(graph.dateRange.start, 'MM/dd', { locale: language === 'ja' ? ja : vi })} - ${format(graph.dateRange.end, 'MM/dd', { locale: language === 'ja' ? ja : vi })}`
+                              : t('dashboard.graph.periodNotSet')}
                           </span>
-                          <span className="sm:hidden">期間</span>
+                          <span className="sm:hidden">{t('dashboard.graph.period')}</span>
                         </button>
                         {/* Device Selector for this graph */}
                         <button
@@ -671,7 +690,7 @@ export default function DashboardPage() {
                           }`}
                         >
                           <Monitor className="w-3 h-3 md:w-3.5 md:h-3.5" />
-                          <span className="hidden sm:inline">{graph.selectedDevices.length} デバイス</span>
+                          <span className="hidden sm:inline">{graph.selectedDevices.length} {t('dashboard.graph.device')}</span>
                           <span className="sm:hidden">{graph.selectedDevices.length}</span>
                         </button>
                         {/* Metrics Selector for this graph */}
@@ -684,7 +703,7 @@ export default function DashboardPage() {
                           }`}
                         >
                           <BarChart3 className="w-3 h-3 md:w-3.5 md:h-3.5" />
-                          <span className="hidden sm:inline">{graph.selectedMetrics.length} メトリクス</span>
+                          <span className="hidden sm:inline">{graph.selectedMetrics.length} {t('dashboard.graph.metric')}</span>
                           <span className="sm:hidden">{graph.selectedMetrics.length}</span>
                         </button>
                         {/* Remove Graph */}
@@ -692,7 +711,7 @@ export default function DashboardPage() {
                           <button
                             onClick={() => removeGraph(graph.id)}
                             className="p-1 md:p-1.5 text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                            title="グラフを削除"
+                            title={t('dashboard.graph.remove')}
                           >
                             <X className="w-3.5 h-3.5 md:w-4 md:h-4" />
                           </button>
@@ -708,7 +727,7 @@ export default function DashboardPage() {
                       {graphDrawer.type === 'period' && mounted && (
                         <div>
                           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            期間選択
+                            {t('dateRange.label')}
                           </h4>
                           <DateRangeSelector
                             value={graph.dateRange || dateRange}
@@ -719,7 +738,7 @@ export default function DashboardPage() {
                       {graphDrawer.type === 'devices' && (
                         <div>
                           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            デバイス選択
+                            {t('dashboard.graph.selectDevices')}
                           </h4>
                           <DeviceSelector
                             devices={devices}
@@ -732,7 +751,7 @@ export default function DashboardPage() {
                       {graphDrawer.type === 'metrics' && (
                         <div>
                           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            データ種別選択
+                            {t('dashboard.graph.selectMetrics')}
                           </h4>
                           <MetricSelector
                             selectedMetrics={graph.selectedMetrics}
@@ -770,7 +789,7 @@ export default function DashboardPage() {
                   className="flex items-center space-x-2 px-6 py-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-300 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg transition-all hover:border-gray-400 dark:hover:border-gray-500"
                 >
                   <Plus className="w-5 h-5" />
-                  <span className="font-medium">新しいグラフを追加</span>
+                  <span className="font-medium">{t('dashboard.graph.addNew')}</span>
                 </button>
               </div>
             </div>

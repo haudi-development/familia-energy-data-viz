@@ -132,5 +132,46 @@
     "ja": "日本語",
     "en": "English",
     "vi": "Tiếng Việt"
+  },
+  "dashboard": {
+    "preset": {
+      "title": "Quản Lý Mẫu",
+      "save": "Lưu Mẫu",
+      "load": "Tải Mẫu",
+      "update": "Cập Nhật",
+      "delete": "Xóa",
+      "rename": "Đổi Tên",
+      "namePlaceholder": "Nhập tên mẫu",
+      "savedMessage": "Đã lưu mẫu",
+      "updatedMessage": "Đã cập nhật mẫu",
+      "saveError": "Lỗi khi lưu mẫu",
+      "lastGraphError": "Không thể xóa biểu đồ cuối cùng",
+      "currentPreset": "Mẫu hiện tại"
+    },
+    "graph": {
+      "addNew": "Thêm Biểu Đồ Mới",
+      "period": "Thời Gian",
+      "device": "Thiết Bị",
+      "metric": "Chỉ Số",
+      "periodNotSet": "Chưa chọn thời gian",
+      "selectDevices": "Chọn Thiết Bị",
+      "selectMetrics": "Chọn Chỉ Số",
+      "selectAll": "Chọn Tất Cả",
+      "clearAll": "Bỏ Chọn Tất Cả",
+      "noDataAvailable": "Không có dữ liệu",
+      "remove": "Xóa biểu đồ"
+    },
+    "realtime": {
+      "title": "Thời Gian Thực",
+      "on": "Bật",
+      "off": "Tắt",
+      "lastUpdate": "Cập nhật"
+    },
+    "alerts": {
+      "title": "Cảnh Báo",
+      "critical": "Nghiêm Trọng",
+      "warning": "Cảnh Báo",
+      "info": "Thông Tin"
+    }
   }
 }
