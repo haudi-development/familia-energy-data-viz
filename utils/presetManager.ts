@@ -27,6 +27,14 @@ export const getPresets = (): ChartPreset[] => {
         start: new Date(p.dateRange.start),
         end: new Date(p.dateRange.end)
       },
+      // Also convert dateRange in each graph if present
+      graphs: p.graphs?.map((g: any) => ({
+        ...g,
+        dateRange: g.dateRange ? {
+          start: new Date(g.dateRange.start),
+          end: new Date(g.dateRange.end)
+        } : undefined
+      })) || [],
       createdAt: new Date(p.createdAt),
       updatedAt: new Date(p.updatedAt)
     }));

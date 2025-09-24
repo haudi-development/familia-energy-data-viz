@@ -15,10 +15,14 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({ value, onChange }
   const { t } = useTranslation();
   const [showCustom, setShowCustom] = useState(false);
 
-  // Ensure value has valid start and end dates
+  // Ensure value has valid start and end dates - convert to Date objects
   const safeValue = {
-    start: value?.start || new Date(Date.now() - 24 * 60 * 60 * 1000), // default to 1 day ago
-    end: value?.end || new Date()
+    start: value?.start
+      ? (value.start instanceof Date ? value.start : new Date(value.start))
+      : new Date(Date.now() - 24 * 60 * 60 * 1000), // default to 1 day ago
+    end: value?.end
+      ? (value.end instanceof Date ? value.end : new Date(value.end))
+      : new Date()
   };
 
   const presets = [
